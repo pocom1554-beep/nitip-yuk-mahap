@@ -15,6 +15,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as PesananRouteImport } from './routes/pesanan'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminKatalogRouteImport } from './routes/admin.katalog'
+import { Route as AdminPengaturanRouteImport } from './routes/admin.pengaturan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const AdminKatalogRoute = AdminKatalogRouteImport.update({
   path: '/admin/katalog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPengaturanRoute = AdminPengaturanRouteImport.update({
+  id: '/admin/pengaturan',
+  path: '/admin/pengaturan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
+  '/admin/pengaturan': typeof AdminPengaturanRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
+  '/admin/pengaturan': typeof AdminPengaturanRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -70,14 +78,28 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
+  '/admin/pengaturan': typeof AdminPengaturanRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/checkout' | '/pesanan' | '/admin/katalog' | '/admin/'
+    | '/'
+    | '/auth'
+    | '/checkout'
+    | '/pesanan'
+    | '/admin/katalog'
+    | '/admin/pengaturan'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/checkout' | '/pesanan' | '/admin/katalog' | '/admin'
+  to:
+    | '/'
+    | '/auth'
+    | '/checkout'
+    | '/pesanan'
+    | '/admin/katalog'
+    | '/admin/pengaturan'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -85,6 +107,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/pesanan'
     | '/admin/katalog'
+    | '/admin/pengaturan'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -94,6 +117,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   PesananRoute: typeof PesananRoute
   AdminKatalogRoute: typeof AdminKatalogRoute
+  AdminPengaturanRoute: typeof AdminPengaturanRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -141,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/pengaturan': {
+      id: '/admin/pengaturan'
+      path: '/admin/pengaturan'
+      fullPath: '/admin/pengaturan'
+      preLoaderRoute: typeof AdminPengaturanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -150,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   PesananRoute: PesananRoute,
   AdminKatalogRoute: AdminKatalogRoute,
+  AdminPengaturanRoute: AdminPengaturanRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
