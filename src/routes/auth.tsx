@@ -47,14 +47,20 @@ function AuthPage() {
       password: loginPassword,
     });
     setBusy(false);
-    if (error) return toast.error("Gagal masuk", { description: error.message });
+    if (error) {
+      toast.error("Gagal masuk", { description: error.message });
+      return;
+    }
     toast.success("Berhasil masuk");
     void navigate({ to: "/" });
   };
 
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !wa.trim()) return toast.error("Nama dan nomor WhatsApp wajib diisi");
+    if (!name.trim() || !wa.trim()) {
+      toast.error("Nama dan nomor WhatsApp wajib diisi");
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
@@ -65,7 +71,10 @@ function AuthPage() {
       },
     });
     setBusy(false);
-    if (error) return toast.error("Gagal daftar", { description: error.message });
+    if (error) {
+      toast.error("Gagal daftar", { description: error.message });
+      return;
+    }
     if (data.session) {
       toast.success("Akun dibuat!");
       void navigate({ to: "/" });
@@ -75,6 +84,7 @@ function AuthPage() {
       });
     }
   };
+
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
