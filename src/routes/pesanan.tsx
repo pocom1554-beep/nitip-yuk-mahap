@@ -158,6 +158,37 @@ function PesananSaya() {
                   </a>
                 </Button>
               )}
+
+              {(o.status === "baru" || o.status === "diproses") && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full text-destructive hover:text-destructive"
+                      disabled={cancelling === o.id}
+                    >
+                      <X className="h-4 w-4" /> Batalkan pesanan
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Batalkan pesanan ini?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Pesanan #{o.id.slice(0, 8)} akan dibatalkan dan tidak diproses admin. Kalau
+                        barang sudah dibelanjakan, hubungi admin dulu ya.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Tidak jadi</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void batalkan(o.id)}>
+                        Ya, batalkan
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
             </article>
           ))}
         </div>
