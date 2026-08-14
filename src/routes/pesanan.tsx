@@ -43,6 +43,7 @@ type Order = {
   total: number;
   status: string;
   created_at: string;
+  claimed_by: string | null;
 };
 
 function PesananSaya() {
