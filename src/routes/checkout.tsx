@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, MessageCircle } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed } from "lucide-react";
+import { jarakDariPusat, mapsEmbed, mapsLink } from "@/lib/maps";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
