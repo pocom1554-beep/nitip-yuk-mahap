@@ -240,7 +240,21 @@ function AdminDashboard() {
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                <Select value={o.status} onValueChange={(v) => void ubahStatus(o.id, v)}>
+                {!o.claimed_by ? (
+                  <Button disabled={claiming === o.id} onClick={() => void ambilPesanan(o.id)}>
+                    <Lock className="h-4 w-4" /> Ambil pesanan
+                  </Button>
+                ) : (o.claimed_by === user?.id || isOwner) ? (
+                  <Button variant="outline" onClick={() => void lepasPesanan(o.id)}>
+                    <LockOpen className="h-4 w-4" /> Lepas pesanan
+                  </Button>
+                ) : null}
+                <Select
+                  value={o.status}
+                  disabled={!!o.claimed_by && o.claimed_by !== user?.id && !isOwner}
+                  onValueChange={(v) => void ubahStatus(o.id, v)}
+                >
+
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
