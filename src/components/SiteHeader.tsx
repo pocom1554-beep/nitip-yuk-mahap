@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingBag, LogOut, ShieldCheck, ClipboardList, Menu } from "lucide-react";
+import { ShoppingBag, LogOut, ShieldCheck, ClipboardList, Menu, UserRound } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
 export function SiteHeader() {
   const { user, profile, isAdmin, signOut } = useAuth();
   const { count } = useCart();
+  const { site_name, tagline, logoSrc } = useSiteSettings();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   if (pathname.startsWith("/auth")) return null;
@@ -22,12 +24,16 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-hero text-primary-foreground">
-            <ShoppingBag className="h-4 w-4" />
+          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-hero text-primary-foreground">
+            {logoSrc ? (
+              <img src={logoSrc} alt={`Logo ${site_name}`} className="h-full w-full object-cover" />
+            ) : (
+              <ShoppingBag className="h-4 w-4" />
+            )}
           </span>
           <span className="leading-tight">
-            <span className="block text-base font-extrabold tracking-tight">NitipYuk</span>
-            <span className="block text-[10px] text-muted-foreground">Mau apa aja, tinggal titip!</span>
+            <span className="block text-base font-extrabold tracking-tight">{site_name}</span>
+            <span className="block text-[10px] text-muted-foreground">{tagline}</span>
           </span>
         </Link>
 
@@ -55,6 +61,11 @@ export function SiteHeader() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/akun">
+                    <UserRound className="mr-2 h-4 w-4" /> Dashboard akun
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/pesanan">
                     <ClipboardList className="mr-2 h-4 w-4" /> Pesanan saya
