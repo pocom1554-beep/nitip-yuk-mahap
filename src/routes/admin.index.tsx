@@ -127,6 +127,29 @@ function AdminDashboard() {
 
               <p className="mt-2 text-sm text-muted-foreground">{o.address}</p>
 
+              {(o.map_link || o.lat != null || o.address) && (
+                <div className="mt-2 space-y-2">
+                  <iframe
+                    title={`Peta pengantaran pesanan ${o.id.slice(0, 8)}`}
+                    src={mapsEmbed({ lat: o.lat, lng: o.lng, address: o.address })}
+                    className="h-44 w-full rounded-xl border border-border"
+                    loading="lazy"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <a href={mapsDirections({ lat: o.lat, lng: o.lng, address: o.address })} target="_blank" rel="noreferrer">
+                        <Navigation className="h-4 w-4" /> Buka rute
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="ghost">
+                      <a href={mapsLink({ lat: o.lat, lng: o.lng, address: o.address, map_link: o.map_link })} target="_blank" rel="noreferrer">
+                        <MapPin className="h-4 w-4" /> Lihat lokasi
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <ul className="mt-3 space-y-1 text-sm">
                 {o.items.map((i, idx) => (
                   <li key={idx} className="flex justify-between">
