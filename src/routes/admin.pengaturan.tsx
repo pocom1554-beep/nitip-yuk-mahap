@@ -146,6 +146,8 @@ function Pengaturan() {
         </Button>
       </section>
 
+      {isOwner && <BrandingSection />}
+
       <section className="surface-card mt-4 p-4">
         <h2 className="font-semibold">Slot admin</h2>
         <p className="mt-1 text-xs text-muted-foreground">
