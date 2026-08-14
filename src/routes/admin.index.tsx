@@ -49,17 +49,28 @@ type Order = {
   lat: number | null;
   lng: number | null;
   map_link: string | null;
+  claimed_by: string | null;
+  claimed_at: string | null;
 };
 
 const STATUSES = ["baru", "diproses", "diantar", "selesai", "batal"];
 
 function AdminDashboard() {
+  const { user, isOwner } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState("semua");
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [claiming, setClaiming] = useState<string | null>(null);
 
   const load = async () => {
     const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    setOrders((data ?? []) as unknown as Order[]);
+    const list = (data ?? []) as unknown as Order[];
+    setOrders(list);
+    const ids = Array.from(new Set(list.map((o) => o.claimed_by).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      setNames(Object.fromEntries((profs ?? []).map((p) => [p.id, p.full_name || "Admin"])));
+    }
   };
 
   useEffect(() => {
@@ -73,6 +84,43 @@ function AdminDashboard() {
     };
   }, []);
 
+  /** Klaim pesanan secara atomik: hanya berhasil kalau belum diambil admin lain. */
+  const ambilPesanan = async (id: string) => {
+    if (!user) return;
+    setClaiming(id);
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ claimed_by: user.id, claimed_at: new Date().toISOString() })
+      .eq("id", id)
+      .is("claimed_by", null)
+      .select("id");
+    setClaiming(null);
+    if (error) {
+      toast.error("Gagal mengambil pesanan", { description: error.message });
+      return;
+    }
+    if (!data || data.length === 0) {
+      toast.error("Pesanan sudah diambil admin lain");
+      void load();
+      return;
+    }
+    toast.success("Pesanan berhasil dikunci untukmu");
+    void load();
+  };
+
+  const lepasPesanan = async (id: string) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({ claimed_by: null, claimed_at: null })
+      .eq("id", id);
+    if (error) {
+      toast.error("Gagal melepas pesanan", { description: error.message });
+      return;
+    }
+    toast.success("Pesanan dilepas, admin lain bisa mengambilnya");
+    void load();
+  };
+
   const ubahStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
     if (error) {
@@ -80,11 +128,13 @@ function AdminDashboard() {
       return;
     }
     toast.success("Status diperbarui");
+    void notifyCustomerOrderUpdate({ data: { orderId: id, status } }).catch(() => undefined);
     void load();
   };
 
   const shown = filter === "semua" ? orders : orders.filter((o) => o.status === filter);
   const baru = orders.filter((o) => o.status === "baru").length;
+
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 pb-16">
