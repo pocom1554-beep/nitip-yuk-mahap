@@ -49,6 +49,20 @@ function PesananSaya() {
   const { user, loading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [adminWa, setAdminWa] = useState("");
+  const [cancelling, setCancelling] = useState<string | null>(null);
+
+  const batalkan = async (id: string) => {
+    setCancelling(id);
+    const { error } = await supabase.from("orders").update({ status: "batal" }).eq("id", id);
+    setCancelling(null);
+    if (error) {
+      toast.error("Gagal membatalkan pesanan");
+      return;
+    }
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "batal" } : o)));
+    toast.success("Pesanan dibatalkan");
+  };
+
 
   useEffect(() => {
     if (!user) return;
