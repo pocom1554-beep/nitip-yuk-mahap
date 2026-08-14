@@ -162,6 +162,10 @@ function AdminDashboard() {
         </Select>
       </div>
 
+      <PushToggle role="admin" />
+
+
+
       {shown.length === 0 ? (
         <p className="surface-card mt-4 p-8 text-center text-sm text-muted-foreground">Belum ada pesanan.</p>
       ) : (
