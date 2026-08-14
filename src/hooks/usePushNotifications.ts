@@ -45,8 +45,8 @@ export function usePushNotifications(enabled: boolean) {
         await savePushSubscription({
           data: {
             endpoint: sub.endpoint,
-            p256dh: json.keys?.p256dh ?? "",
-            auth: json.keys?.auth ?? "",
+            p256dh: json.keys?.["p256dh"] ?? "",
+            auth: json.keys?.["auth"] ?? "",
           },
         }).catch(() => undefined);
       }
@@ -76,8 +76,8 @@ export function usePushNotifications(enabled: boolean) {
       await savePushSubscription({
         data: {
           endpoint: sub.endpoint,
-          p256dh: json.keys?.p256dh ?? "",
-          auth: json.keys?.auth ?? "",
+          p256dh: json.keys?.["p256dh"] ?? "",
+          auth: json.keys?.["auth"] ?? "",
         },
       });
       setState("on");
