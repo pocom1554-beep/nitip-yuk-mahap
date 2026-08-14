@@ -42,6 +42,33 @@ function Checkout() {
   const [wa, setWa] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapLink, setMapLink] = useState("");
+  const [locating, setLocating] = useState(false);
+
+  const ambilLokasi = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Perangkat tidak mendukung lokasi otomatis");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        setCoords({ lat, lng });
+        setMapLink(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+        setDistance(String(jarakDariPusat(lat, lng)));
+        setLocating(false);
+        toast.success("Lokasi peta tersimpan", { description: "Admin bisa langsung buka rute Google Maps." });
+      },
+      (err) => {
+        setLocating(false);
+        toast.error("Gagal mengambil lokasi", { description: err.message });
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
 
   useEffect(() => {
     void supabase
