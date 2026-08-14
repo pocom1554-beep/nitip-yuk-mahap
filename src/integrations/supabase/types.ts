@@ -17,6 +17,8 @@ export type Database = {
       orders: {
         Row: {
           address: string
+          claimed_at: string | null
+          claimed_by: string | null
           created_at: string
           customer_id: string
           customer_name: string
@@ -36,6 +38,8 @@ export type Database = {
         }
         Insert: {
           address?: string
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           customer_id: string
           customer_name?: string
@@ -55,6 +59,8 @@ export type Database = {
         }
         Update: {
           address?: string
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           customer_id?: string
           customer_name?: string
@@ -140,6 +146,36 @@ export type Database = {
           id?: string
           is_owner?: boolean
           whatsapp?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
