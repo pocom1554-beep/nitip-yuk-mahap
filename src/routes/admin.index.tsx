@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, MapPin, Navigation } from "lucide-react";
+import { mapsDirections, mapsEmbed, mapsLink } from "@/lib/maps";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminGate } from "@/components/AdminGate";
 import { rupiah, waLink, STATUS_LABEL } from "@/lib/format";
