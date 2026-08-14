@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
+import { SiteSettingsProvider } from "@/hooks/useSiteSettings";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { OrderNotifier } from "@/components/OrderNotifier";
@@ -127,6 +128,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <SiteSettingsProvider>
         <CartProvider>
           <div className="min-h-screen bg-background">
             <SiteHeader />
@@ -136,6 +138,7 @@ function RootComponent() {
           </div>
           <Toaster position="top-center" richColors />
         </CartProvider>
+        </SiteSettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

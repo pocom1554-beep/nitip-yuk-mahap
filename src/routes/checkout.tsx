@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, MessageCircle } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed } from "lucide-react";
+import { jarakDariPusat, mapsEmbed, mapsLink } from "@/lib/maps";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
@@ -41,6 +42,33 @@ function Checkout() {
   const [wa, setWa] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapLink, setMapLink] = useState("");
+  const [locating, setLocating] = useState(false);
+
+  const ambilLokasi = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Perangkat tidak mendukung lokasi otomatis");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        setCoords({ lat, lng });
+        setMapLink(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+        setDistance(String(jarakDariPusat(lat, lng)));
+        setLocating(false);
+        toast.success("Lokasi peta tersimpan", { description: "Admin bisa langsung buka rute Google Maps." });
+      },
+      (err) => {
+        setLocating(false);
+        toast.error("Gagal mengambil lokasi", { description: err.message });
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
 
   useEffect(() => {
     void supabase
@@ -91,6 +119,9 @@ function Checkout() {
         delivery_fee: ongkir,
         total: grandTotal,
         status: "baru",
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
+        map_link: mapLink.trim(),
       })
       .select()
       .single();
@@ -161,6 +192,39 @@ function Checkout() {
         <div className="space-y-1.5">
           <Label htmlFor="al">Alamat lengkap</Label>
           <Textarea id="al" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={300} rows={2} />
+        </div>
+        <div className="space-y-2">
+          <Label>Titik lokasi (Google Maps)</Label>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={ambilLokasi} disabled={locating}>
+              <LocateFixed className="h-4 w-4" /> {locating ? "Mencari lokasi..." : "Bagikan lokasi saya"}
+            </Button>
+            {(coords || address.trim()) && (
+              <Button asChild type="button" variant="ghost">
+                <a href={mapsLink({ ...coords, address, map_link: mapLink })} target="_blank" rel="noreferrer">
+                  <MapPin className="h-4 w-4" /> Buka peta
+                </a>
+              </Button>
+            )}
+          </div>
+          <Input
+            value={mapLink}
+            onChange={(e) => setMapLink(e.target.value)}
+            placeholder="atau tempel link Google Maps lokasimu"
+          />
+          {coords && (
+            <p className="text-xs text-muted-foreground">
+              Koordinat: {coords.lat}, {coords.lng} — perkiraan jarak {jarakDariPusat(coords.lat, coords.lng)} km.
+            </p>
+          )}
+          {(coords || address.trim()) && (
+            <iframe
+              title="Peta lokasi pengantaran"
+              src={mapsEmbed({ ...coords, address })}
+              className="h-52 w-full rounded-xl border border-border"
+              loading="lazy"
+            />
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="jr">Jarak dari pusat Nanga Mahap (km)</Label>

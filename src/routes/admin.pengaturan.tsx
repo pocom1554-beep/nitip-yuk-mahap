@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldOff } from "lucide-react";
+import { ShieldCheck, ShieldOff, Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminGate } from "@/components/AdminGate";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { resolveBucketUrl, uploadLogo } from "@/lib/images";
 
 export const Route = createFileRoute("/admin/pengaturan")({
   head: () => ({
@@ -146,6 +149,8 @@ function Pengaturan() {
         </Button>
       </section>
 
+      {isOwner && <BrandingSection />}
+
       <section className="surface-card mt-4 p-4">
         <h2 className="font-semibold">Slot admin</h2>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -182,5 +187,110 @@ function Pengaturan() {
         </div>
       </section>
     </main>
+  );
+}
+
+function BrandingSection() {
+  const { refresh: refreshBranding } = useSiteSettings();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [siteName, setSiteName] = useState("NitipYuk");
+  const [tagline, setTagline] = useState("Mau apa aja, tinggal titip!");
+  const [desc, setDesc] = useState("");
+  const [logoPath, setLogoPath] = useState("");
+  const [logoSrc, setLogoSrc] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    void supabase
+      .from("settings")
+      .select("site_name, tagline, site_description, logo_url")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(async ({ data }) => {
+        if (!data) return;
+        setSiteName(data.site_name || "NitipYuk");
+        setTagline(data.tagline || "");
+        setDesc(data.site_description || "");
+        setLogoPath(data.logo_url || "");
+        setLogoSrc(await resolveBucketUrl("branding", data.logo_url));
+      });
+  }, []);
+
+  const pilihLogo = async (file: File) => {
+    setBusy(true);
+    try {
+      const path = await uploadLogo(file);
+      setLogoPath(path);
+      setLogoSrc(await resolveBucketUrl("branding", path));
+      toast.success("Logo terunggah, jangan lupa simpan");
+    } catch (e) {
+      toast.error("Gagal mengunggah logo", { description: (e as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const simpanBranding = async () => {
+    setBusy(true);
+    const { error } = await supabase
+      .from("settings")
+      .update({
+        site_name: siteName.trim(),
+        tagline: tagline.trim(),
+        site_description: desc.trim(),
+        logo_url: logoPath,
+      })
+      .eq("id", 1);
+    setBusy(false);
+    if (error) {
+      toast.error("Gagal menyimpan identitas situs", { description: error.message });
+      return;
+    }
+    await refreshBranding();
+    toast.success("Identitas situs diperbarui");
+  };
+
+  return (
+    <section className="surface-card mt-4 space-y-3 p-4">
+      <h2 className="font-semibold">Identitas situs (admin utama)</h2>
+      <div className="flex items-center gap-3">
+        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted">
+          {logoSrc ? (
+            <img src={logoSrc} alt="Logo situs" className="h-full w-full object-cover" />
+          ) : (
+            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+          )}
+        </div>
+        <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} disabled={busy}>
+          <Upload className="h-4 w-4" /> Ganti logo
+        </Button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void pilihLogo(f);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="sn">Nama situs</Label>
+        <Input id="sn" value={siteName} onChange={(e) => setSiteName(e.target.value)} maxLength={40} />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="tg">Tagline</Label>
+        <Input id="tg" value={tagline} onChange={(e) => setTagline(e.target.value)} maxLength={80} />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="ds">Deskripsi website</Label>
+        <Textarea id="ds" rows={3} maxLength={300} value={desc} onChange={(e) => setDesc(e.target.value)} />
+      </div>
+      <Button onClick={() => void simpanBranding()} disabled={busy}>
+        {busy ? "Menyimpan..." : "Simpan identitas situs"}
+      </Button>
+    </section>
   );
 }

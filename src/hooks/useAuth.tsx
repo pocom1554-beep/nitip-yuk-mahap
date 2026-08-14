@@ -8,6 +8,7 @@ export type Profile = {
   whatsapp: string;
   address: string;
   is_owner: boolean;
+  avatar_url: string | null;
 };
 
 type AuthState = {
