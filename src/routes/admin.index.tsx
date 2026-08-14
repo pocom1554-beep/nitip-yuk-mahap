@@ -174,9 +174,8 @@ function AdminDashboard() {
                   <p className="text-xs text-muted-foreground">
                     #{o.id.slice(0, 8)} • {new Date(o.created_at).toLocaleString("id-ID")}
                   </p>
-      </div>
+                </div>
 
-      <PushToggle role="admin" />
 
                 <Badge variant={o.status === "baru" ? "default" : "secondary"}>
                   {STATUS_LABEL[o.status] ?? o.status}
