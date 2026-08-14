@@ -132,6 +132,13 @@ function PesananSaya() {
                 </Badge>
               </div>
 
+              {o.claimed_by && o.status !== "batal" && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <Lock className="h-3.5 w-3.5" /> Sudah diambil kurir, sedang ditangani
+                </p>
+              )}
+
+
               <ul className="mt-3 space-y-1 text-sm">
                 {o.items.map((i, idx) => (
                   <li key={idx} className="flex justify-between">
