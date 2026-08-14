@@ -137,6 +137,7 @@ function RootComponent() {
           </div>
           <Toaster position="top-center" richColors />
         </CartProvider>
+        </SiteSettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
