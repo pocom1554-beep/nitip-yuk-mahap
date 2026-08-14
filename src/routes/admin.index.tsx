@@ -45,6 +45,9 @@ type Order = {
   total: number;
   status: string;
   created_at: string;
+  lat: number | null;
+  lng: number | null;
+  map_link: string | null;
 };
 
 const STATUSES = ["baru", "diproses", "diantar", "selesai", "batal"];
