@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as PesananRouteImport } from './routes/pesanan'
@@ -20,6 +21,11 @@ import { Route as AdminPengaturanRouteImport } from './routes/admin.pengaturan'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AkunRoute = AkunRouteImport.update({
+  id: '/akun',
+  path: '/akun',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -55,6 +61,7 @@ const AdminPengaturanRoute = AdminPengaturanRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/pesanan': typeof PesananRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/pesanan': typeof PesananRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/pesanan': typeof PesananRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/akun'
     | '/auth'
     | '/checkout'
     | '/pesanan'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/akun'
     | '/auth'
     | '/checkout'
     | '/pesanan'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/akun'
     | '/auth'
     | '/checkout'
     | '/pesanan'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AkunRoute: typeof AkunRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
   PesananRoute: typeof PesananRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/akun': {
+      id: '/akun'
+      path: '/akun'
+      fullPath: '/akun'
+      preLoaderRoute: typeof AkunRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AkunRoute: AkunRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
   PesananRoute: PesananRoute,
