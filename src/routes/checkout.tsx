@@ -1,3 +1,4 @@
+import { notifyAdminsNewOrder } from "@/lib/push.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -132,8 +133,16 @@ function Checkout() {
     }
     clear();
     toast.success("Pesanan terkirim ke admin!");
+    if (data?.id) {
+      void notifyAdminsNewOrder({
+        data: {
+          orderId: data.id as string,
+          customerName: profile?.full_name || "Pelanggan",
+          total: grandTotal,
+        },
+      }).catch(() => undefined);
+    }
     void navigate({ to: "/pesanan" });
-    void data;
   };
 
   const ringkasanWa = [

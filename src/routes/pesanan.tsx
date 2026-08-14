@@ -1,3 +1,5 @@
+import { PushToggle } from "@/components/PushToggle";
+import { Lock } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
@@ -43,6 +45,7 @@ type Order = {
   total: number;
   status: string;
   created_at: string;
+  claimed_by: string | null;
 };
 
 function PesananSaya() {
@@ -103,6 +106,9 @@ function PesananSaya() {
     <main className="mx-auto max-w-3xl px-4 py-6 pb-16">
       <h1 className="text-2xl font-extrabold tracking-tight">Pesanan saya</h1>
 
+      <PushToggle role="customer" />
+
+
       {orders.length === 0 ? (
         <div className="surface-card mt-4 p-8 text-center">
           <p className="font-semibold">Belum ada pesanan</p>
@@ -125,6 +131,13 @@ function PesananSaya() {
                   {STATUS_LABEL[o.status] ?? o.status}
                 </Badge>
               </div>
+
+              {o.claimed_by && o.status !== "batal" && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <Lock className="h-3.5 w-3.5" /> Sudah diambil kurir, sedang ditangani
+                </p>
+              )}
+
 
               <ul className="mt-3 space-y-1 text-sm">
                 {o.items.map((i, idx) => (

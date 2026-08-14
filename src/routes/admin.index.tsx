@@ -1,3 +1,7 @@
+import { useAuth } from "@/hooks/useAuth";
+import { PushToggle } from "@/components/PushToggle";
+import { notifyCustomerOrderUpdate } from "@/lib/push.functions";
+import { Lock, LockOpen } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -49,17 +53,28 @@ type Order = {
   lat: number | null;
   lng: number | null;
   map_link: string | null;
+  claimed_by: string | null;
+  claimed_at: string | null;
 };
 
 const STATUSES = ["baru", "diproses", "diantar", "selesai", "batal"];
 
 function AdminDashboard() {
+  const { user, isOwner } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState("semua");
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [claiming, setClaiming] = useState<string | null>(null);
 
   const load = async () => {
     const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    setOrders((data ?? []) as unknown as Order[]);
+    const list = (data ?? []) as unknown as Order[];
+    setOrders(list);
+    const ids = Array.from(new Set(list.map((o) => o.claimed_by).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      setNames(Object.fromEntries((profs ?? []).map((p) => [p.id, p.full_name || "Admin"])));
+    }
   };
 
   useEffect(() => {
@@ -73,6 +88,43 @@ function AdminDashboard() {
     };
   }, []);
 
+  /** Klaim pesanan secara atomik: hanya berhasil kalau belum diambil admin lain. */
+  const ambilPesanan = async (id: string) => {
+    if (!user) return;
+    setClaiming(id);
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ claimed_by: user.id, claimed_at: new Date().toISOString() })
+      .eq("id", id)
+      .is("claimed_by", null)
+      .select("id");
+    setClaiming(null);
+    if (error) {
+      toast.error("Gagal mengambil pesanan", { description: error.message });
+      return;
+    }
+    if (!data || data.length === 0) {
+      toast.error("Pesanan sudah diambil admin lain");
+      void load();
+      return;
+    }
+    toast.success("Pesanan berhasil dikunci untukmu");
+    void load();
+  };
+
+  const lepasPesanan = async (id: string) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({ claimed_by: null, claimed_at: null })
+      .eq("id", id);
+    if (error) {
+      toast.error("Gagal melepas pesanan", { description: error.message });
+      return;
+    }
+    toast.success("Pesanan dilepas, admin lain bisa mengambilnya");
+    void load();
+  };
+
   const ubahStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
     if (error) {
@@ -80,11 +132,13 @@ function AdminDashboard() {
       return;
     }
     toast.success("Status diperbarui");
+    void notifyCustomerOrderUpdate({ data: { orderId: id, status } }).catch(() => undefined);
     void load();
   };
 
   const shown = filter === "semua" ? orders : orders.filter((o) => o.status === filter);
   const baru = orders.filter((o) => o.status === "baru").length;
+
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 pb-16">
@@ -108,6 +162,10 @@ function AdminDashboard() {
         </Select>
       </div>
 
+      <PushToggle role="admin" />
+
+
+
       {shown.length === 0 ? (
         <p className="surface-card mt-4 p-8 text-center text-sm text-muted-foreground">Belum ada pesanan.</p>
       ) : (
@@ -121,10 +179,25 @@ function AdminDashboard() {
                     #{o.id.slice(0, 8)} • {new Date(o.created_at).toLocaleString("id-ID")}
                   </p>
                 </div>
+
+
                 <Badge variant={o.status === "baru" ? "default" : "secondary"}>
                   {STATUS_LABEL[o.status] ?? o.status}
                 </Badge>
               </div>
+
+              {o.claimed_by ? (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  {o.claimed_by === user?.id
+                    ? "Dikunci untukmu"
+                    : `Sedang ditangani ${names[o.claimed_by] ?? "admin lain"}`}
+                </p>
+              ) : (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <LockOpen className="h-3.5 w-3.5" /> Belum diambil admin
+                </p>
+              )}
 
               <p className="mt-2 text-sm text-muted-foreground">{o.address}</p>
 
@@ -173,7 +246,21 @@ function AdminDashboard() {
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                <Select value={o.status} onValueChange={(v) => void ubahStatus(o.id, v)}>
+                {!o.claimed_by ? (
+                  <Button disabled={claiming === o.id} onClick={() => void ambilPesanan(o.id)}>
+                    <Lock className="h-4 w-4" /> Ambil pesanan
+                  </Button>
+                ) : (o.claimed_by === user?.id || isOwner) ? (
+                  <Button variant="outline" onClick={() => void lepasPesanan(o.id)}>
+                    <LockOpen className="h-4 w-4" /> Lepas pesanan
+                  </Button>
+                ) : null}
+                <Select
+                  value={o.status}
+                  disabled={!!o.claimed_by && o.claimed_by !== user?.id && !isOwner}
+                  onValueChange={(v) => void ubahStatus(o.id, v)}
+                >
+
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
