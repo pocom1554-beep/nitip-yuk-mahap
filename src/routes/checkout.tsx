@@ -119,6 +119,9 @@ function Checkout() {
         delivery_fee: ongkir,
         total: grandTotal,
         status: "baru",
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
+        map_link: mapLink.trim(),
       })
       .select()
       .single();
