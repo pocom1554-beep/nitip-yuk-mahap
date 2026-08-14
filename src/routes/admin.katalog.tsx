@@ -38,6 +38,7 @@ export const Route = createFileRoute("/admin/katalog")({
 type Product = {
   id: string;
   name: string;
+  store_name: string;
   description: string;
   category: string;
   price: number;
@@ -48,6 +49,7 @@ type Product = {
 const empty = {
   id: "",
   name: "",
+  store_name: "",
   description: "",
   category: "Sembako",
   price: 0,
@@ -85,6 +87,7 @@ function KelolaKatalog() {
       if (file) imagePath = await uploadProductImage(file);
       const payload = {
         name: form.name.trim(),
+        store_name: form.store_name.trim(),
         description: form.description.trim(),
         category: form.category.trim() || "Lainnya",
         price: Number(form.price) || 0,
@@ -155,6 +158,9 @@ function KelolaKatalog() {
                   {p.category}
                 </p>
                 <h2 className="truncate text-sm font-semibold">{p.name}</h2>
+                {p.store_name && (
+                  <p className="truncate text-xs text-muted-foreground">{p.store_name}</p>
+                )}
                 <p className="text-sm font-bold text-primary">{rupiah(p.price)}</p>
                 <p className="text-xs text-muted-foreground">
                   {p.is_available ? "Tersedia" : "Kosong"}
@@ -190,6 +196,16 @@ function KelolaKatalog() {
             <div className="space-y-1.5">
               <Label htmlFor="pn">Nama barang</Label>
               <Input id="pn" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ps">Nama toko/mitra</Label>
+              <Input
+                id="ps"
+                value={form.store_name}
+                onChange={(e) => setForm({ ...form, store_name: e.target.value })}
+                placeholder="Contoh: Toko Berkah"
+                maxLength={80}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pc">Kategori</Label>
