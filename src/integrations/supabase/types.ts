@@ -26,6 +26,9 @@ export type Database = {
           id: string
           items: Json
           items_total: number
+          lat: number | null
+          lng: number | null
+          map_link: string
           note: string
           status: string
           total: number
@@ -42,6 +45,9 @@ export type Database = {
           id?: string
           items?: Json
           items_total?: number
+          lat?: number | null
+          lng?: number | null
+          map_link?: string
           note?: string
           status?: string
           total?: number
@@ -58,6 +64,9 @@ export type Database = {
           id?: string
           items?: Json
           items_total?: number
+          lat?: number | null
+          lng?: number | null
+          map_link?: string
           note?: string
           status?: string
           total?: number
@@ -104,6 +113,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string
+          avatar_url: string | null
           created_at: string
           full_name: string
           id: string
@@ -112,6 +122,7 @@ export type Database = {
         }
         Insert: {
           address?: string
+          avatar_url?: string | null
           created_at?: string
           full_name?: string
           id: string
@@ -120,6 +131,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          avatar_url?: string | null
           created_at?: string
           full_name?: string
           id?: string
@@ -134,7 +146,11 @@ export type Database = {
           base_fee: number
           free_km: number
           id: number
+          logo_url: string
           per_km_fee: number
+          site_description: string
+          site_name: string
+          tagline: string
           updated_at: string
         }
         Insert: {
@@ -142,7 +158,11 @@ export type Database = {
           base_fee?: number
           free_km?: number
           id?: number
+          logo_url?: string
           per_km_fee?: number
+          site_description?: string
+          site_name?: string
+          tagline?: string
           updated_at?: string
         }
         Update: {
@@ -150,7 +170,11 @@ export type Database = {
           base_fee?: number
           free_km?: number
           id?: number
+          logo_url?: string
           per_km_fee?: number
+          site_description?: string
+          site_name?: string
+          tagline?: string
           updated_at?: string
         }
         Relationships: []
