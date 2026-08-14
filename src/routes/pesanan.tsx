@@ -1,11 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { rupiah, waLink, STATUS_LABEL } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 export const Route = createFileRoute("/pesanan")({
   head: () => ({
@@ -36,6 +49,20 @@ function PesananSaya() {
   const { user, loading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [adminWa, setAdminWa] = useState("");
+  const [cancelling, setCancelling] = useState<string | null>(null);
+
+  const batalkan = async (id: string) => {
+    setCancelling(id);
+    const { error } = await supabase.from("orders").update({ status: "batal" }).eq("id", id);
+    setCancelling(null);
+    if (error) {
+      toast.error("Gagal membatalkan pesanan");
+      return;
+    }
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "batal" } : o)));
+    toast.success("Pesanan dibatalkan");
+  };
+
 
   useEffect(() => {
     if (!user) return;
@@ -131,6 +158,37 @@ function PesananSaya() {
                   </a>
                 </Button>
               )}
+
+              {(o.status === "baru" || o.status === "diproses") && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full text-destructive hover:text-destructive"
+                      disabled={cancelling === o.id}
+                    >
+                      <X className="h-4 w-4" /> Batalkan pesanan
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Batalkan pesanan ini?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Pesanan #{o.id.slice(0, 8)} akan dibatalkan dan tidak diproses admin. Kalau
+                        barang sudah dibelanjakan, hubungi admin dulu ya.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Tidak jadi</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void batalkan(o.id)}>
+                        Ya, batalkan
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
             </article>
           ))}
         </div>
