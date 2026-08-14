@@ -193,6 +193,39 @@ function Checkout() {
           <Label htmlFor="al">Alamat lengkap</Label>
           <Textarea id="al" value={address} onChange={(e) => setAddress(e.target.value)} maxLength={300} rows={2} />
         </div>
+        <div className="space-y-2">
+          <Label>Titik lokasi (Google Maps)</Label>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={ambilLokasi} disabled={locating}>
+              <LocateFixed className="h-4 w-4" /> {locating ? "Mencari lokasi..." : "Bagikan lokasi saya"}
+            </Button>
+            {(coords || address.trim()) && (
+              <Button asChild type="button" variant="ghost">
+                <a href={mapsLink({ ...coords, address, map_link: mapLink })} target="_blank" rel="noreferrer">
+                  <MapPin className="h-4 w-4" /> Buka peta
+                </a>
+              </Button>
+            )}
+          </div>
+          <Input
+            value={mapLink}
+            onChange={(e) => setMapLink(e.target.value)}
+            placeholder="atau tempel link Google Maps lokasimu"
+          />
+          {coords && (
+            <p className="text-xs text-muted-foreground">
+              Koordinat: {coords.lat}, {coords.lng} — perkiraan jarak {jarakDariPusat(coords.lat, coords.lng)} km.
+            </p>
+          )}
+          {(coords || address.trim()) && (
+            <iframe
+              title="Peta lokasi pengantaran"
+              src={mapsEmbed({ ...coords, address })}
+              className="h-52 w-full rounded-xl border border-border"
+              loading="lazy"
+            />
+          )}
+        </div>
         <div className="space-y-1.5">
           <Label htmlFor="jr">Jarak dari pusat Nanga Mahap (km)</Label>
           <Input
