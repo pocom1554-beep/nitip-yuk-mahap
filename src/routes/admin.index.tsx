@@ -180,6 +180,19 @@ function AdminDashboard() {
                 </Badge>
               </div>
 
+              {o.claimed_by ? (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  {o.claimed_by === user?.id
+                    ? "Dikunci untukmu"
+                    : `Sedang ditangani ${names[o.claimed_by] ?? "admin lain"}`}
+                </p>
+              ) : (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <LockOpen className="h-3.5 w-3.5" /> Belum diambil admin
+                </p>
+              )}
+
               <p className="mt-2 text-sm text-muted-foreground">{o.address}</p>
 
               {(o.map_link || o.lat != null || o.address) && (
