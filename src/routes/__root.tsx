@@ -127,6 +127,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <SiteSettingsProvider>
         <CartProvider>
           <div className="min-h-screen bg-background">
             <SiteHeader />
