@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { MessageCircle, Search, Plus, ImageIcon } from "lucide-react";
+import { MessageCircle, Search, Plus, ImageIcon, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveImageUrls } from "@/lib/images";
 import { rupiah, waLink } from "@/lib/format";
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/")({
 type Product = {
   id: string;
   name: string;
+  store_name: string;
   description: string;
   category: string;
   price: number;
@@ -42,6 +43,7 @@ function Katalog() {
   const [adminWa, setAdminWa] = useState("");
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("Semua");
+  const [store, setStore] = useState("Semua toko");
   const [loading, setLoading] = useState(true);
   const { add } = useCart();
 
@@ -65,9 +67,18 @@ function Katalog() {
     [products],
   );
 
+  const stores = useMemo(
+    () => [
+      "Semua toko",
+      ...Array.from(new Set(products.map((p) => p.store_name).filter(Boolean))),
+    ],
+    [products],
+  );
+
   const filtered = products.filter(
     (p) =>
       (cat === "Semua" || p.category === cat) &&
+      (store === "Semua toko" || p.store_name === store) &&
       (p.name.toLowerCase().includes(q.toLowerCase()) ||
         p.description.toLowerCase().includes(q.toLowerCase())),
   );
@@ -137,6 +148,25 @@ function Katalog() {
           ))}
         </div>
 
+        {stores.length > 1 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {stores.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStore(s)}
+                className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  store === s
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                <Store className="h-3.5 w-3.5" />
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
         {loading ? (
           <p className="mt-10 text-center text-sm text-muted-foreground">Memuat katalog...</p>
         ) : filtered.length === 0 ? (
@@ -172,6 +202,12 @@ function Katalog() {
                     {p.category}
                   </p>
                   <h2 className="line-clamp-2 text-sm font-semibold leading-snug">{p.name}</h2>
+                  {p.store_name && (
+                    <p className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+                      <Store className="h-3 w-3 shrink-0" />
+                      {p.store_name}
+                    </p>
+                  )}
                   <p className="text-sm font-extrabold text-primary">{rupiah(p.price)}</p>
                   <Button
                     size="sm"

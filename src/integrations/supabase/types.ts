@@ -84,6 +84,7 @@ export type Database = {
           is_available: boolean
           name: string
           price: number
+          store_name: string
           updated_at: string
         }
         Insert: {
@@ -95,6 +96,7 @@ export type Database = {
           is_available?: boolean
           name: string
           price?: number
+          store_name?: string
           updated_at?: string
         }
         Update: {
@@ -106,6 +108,7 @@ export type Database = {
           is_available?: boolean
           name?: string
           price?: number
+          store_name?: string
           updated_at?: string
         }
         Relationships: []
