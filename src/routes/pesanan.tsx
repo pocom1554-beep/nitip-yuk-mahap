@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { rupiah, waLink, STATUS_LABEL } from "@/lib/format";
+import { StarRating } from "@/components/StarRating";
+import { RateOrderDialog } from "@/components/RateOrderDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -53,6 +55,7 @@ function PesananSaya() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [adminWa, setAdminWa] = useState("");
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [ratings, setRatings] = useState<Record<string, { stars: number; comment: string }>>({});
 
   const batalkan = async (id: string) => {
     setCancelling(id);
@@ -70,12 +73,18 @@ function PesananSaya() {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [{ data }, { data: s }] = await Promise.all([
+      const [{ data }, { data: s }, { data: r }] = await Promise.all([
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
+        supabase.from("courier_ratings").select("order_id, stars, comment").eq("customer_id", user.id),
       ]);
       setOrders((data ?? []) as unknown as Order[]);
       setAdminWa(s?.admin_whatsapp ?? "");
+      setRatings(
+        Object.fromEntries(
+          (r ?? []).map((x) => [x.order_id, { stars: x.stars, comment: x.comment ?? "" }]),
+        ),
+      );
     };
     void load();
 
@@ -200,6 +209,39 @@ function PesananSaya() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+              )}
+
+              {o.status === "selesai" && (
+                <>
+                  {ratings[o.id] && (
+                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-accent p-2.5">
+                      <StarRating value={ratings[o.id]!.stars} size="sm" />
+                      <span className="truncate text-xs text-accent-foreground">
+                        {ratings[o.id]!.comment || "Ulasanmu tersimpan"}
+                      </span>
+                    </div>
+                  )}
+                  <RateOrderDialog
+                    orderId={o.id}
+                    courierId={o.claimed_by}
+                    itemNames={o.items.map((i) => i.name)}
+                    existing={ratings[o.id] ?? null}
+                    onDone={() =>
+                      void supabase
+                        .from("courier_ratings")
+                        .select("order_id, stars, comment")
+                        .eq("order_id", o.id)
+                        .maybeSingle()
+                        .then(({ data }) => {
+                          if (data)
+                            setRatings((p) => ({
+                              ...p,
+                              [o.id]: { stars: data.stars, comment: data.comment ?? "" },
+                            }));
+                        })
+                    }
+                  />
+                </>
               )}
 
             </article>

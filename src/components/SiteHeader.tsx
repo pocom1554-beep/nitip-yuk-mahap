@@ -1,5 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingBag, LogOut, ShieldCheck, ClipboardList, Menu, UserRound } from "lucide-react";
+import {
+  ShoppingBag,
+  LogOut,
+  ShieldCheck,
+  ClipboardList,
+  Menu,
+  UserRound,
+  Trophy,
+  MessageSquareHeart,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -69,6 +78,16 @@ export function SiteHeader() {
                 <DropdownMenuItem asChild>
                   <Link to="/pesanan">
                     <ClipboardList className="mr-2 h-4 w-4" /> Pesanan saya
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/kurir">
+                    <Trophy className="mr-2 h-4 w-4" /> Peringkat kurir
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/masukan">
+                    <MessageSquareHeart className="mr-2 h-4 w-4" /> Kritik, saran & request
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (

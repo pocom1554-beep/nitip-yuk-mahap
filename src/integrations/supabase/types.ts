@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      courier_ratings: {
+        Row: {
+          comment: string
+          courier_id: string | null
+          created_at: string
+          customer_id: string
+          customer_name: string
+          id: string
+          order_id: string
+          stars: number
+          store_name: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string
+          courier_id?: string | null
+          created_at?: string
+          customer_id: string
+          customer_name?: string
+          id?: string
+          order_id: string
+          stars?: number
+          store_name?: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string
+          courier_id?: string | null
+          created_at?: string
+          customer_id?: string
+          customer_name?: string
+          id?: string
+          order_id?: string
+          stars?: number
+          store_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_ratings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback: {
+        Row: {
+          created_at: string
+          id: string
+          item_name: string
+          message: string
+          reply: string
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_name?: string
+          message?: string
+          reply?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_name?: string
+          message?: string
+          reply?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           address: string
@@ -244,6 +330,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      courier_ranking: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          avg_minutes: number
+          avg_stars: number
+          courier_id: string
+          delivered: number
+          full_name: string
+          rating_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -252,6 +350,21 @@ export type Database = {
         Returns: boolean
       }
       is_owner: { Args: { _user_id: string }; Returns: boolean }
+      product_sales: {
+        Args: never
+        Returns: {
+          product_id: string
+          qty: number
+        }[]
+      }
+      store_stats: {
+        Args: never
+        Returns: {
+          items_count: number
+          orders_count: number
+          store_name: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "customer"

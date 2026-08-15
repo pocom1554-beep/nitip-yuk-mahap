@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as KurirRouteImport } from './routes/kurir'
+import { Route as MasukanRouteImport } from './routes/masukan'
 import { Route as PesananRouteImport } from './routes/pesanan'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminKatalogRouteImport } from './routes/admin.katalog'
@@ -36,6 +38,16 @@ const AuthRoute = AuthRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KurirRoute = KurirRouteImport.update({
+  id: '/kurir',
+  path: '/kurir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasukanRoute = MasukanRouteImport.update({
+  id: '/masukan',
+  path: '/masukan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PesananRoute = PesananRouteImport.update({
@@ -64,6 +76,8 @@ export interface FileRoutesByFullPath {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/kurir': typeof KurirRoute
+  '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
   '/admin/pengaturan': typeof AdminPengaturanRoute
@@ -74,6 +88,8 @@ export interface FileRoutesByTo {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/kurir': typeof KurirRoute
+  '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
   '/admin/pengaturan': typeof AdminPengaturanRoute
@@ -85,6 +101,8 @@ export interface FileRoutesById {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/kurir': typeof KurirRoute
+  '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
   '/admin/pengaturan': typeof AdminPengaturanRoute
@@ -97,6 +115,8 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
+    | '/kurir'
+    | '/masukan'
     | '/pesanan'
     | '/admin/katalog'
     | '/admin/pengaturan'
@@ -107,6 +127,8 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
+    | '/kurir'
+    | '/masukan'
     | '/pesanan'
     | '/admin/katalog'
     | '/admin/pengaturan'
@@ -117,6 +139,8 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
+    | '/kurir'
+    | '/masukan'
     | '/pesanan'
     | '/admin/katalog'
     | '/admin/pengaturan'
@@ -128,6 +152,8 @@ export interface RootRouteChildren {
   AkunRoute: typeof AkunRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
+  KurirRoute: typeof KurirRoute
+  MasukanRoute: typeof MasukanRoute
   PesananRoute: typeof PesananRoute
   AdminKatalogRoute: typeof AdminKatalogRoute
   AdminPengaturanRoute: typeof AdminPengaturanRoute
@@ -162,6 +188,20 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kurir': {
+      id: '/kurir'
+      path: '/kurir'
+      fullPath: '/kurir'
+      preLoaderRoute: typeof KurirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/masukan': {
+      id: '/masukan'
+      path: '/masukan'
+      fullPath: '/masukan'
+      preLoaderRoute: typeof MasukanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pesanan': {
@@ -200,6 +240,8 @@ const rootRouteChildren: RootRouteChildren = {
   AkunRoute: AkunRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
+  KurirRoute: KurirRoute,
+  MasukanRoute: MasukanRoute,
   PesananRoute: PesananRoute,
   AdminKatalogRoute: AdminKatalogRoute,
   AdminPengaturanRoute: AdminPengaturanRoute,
