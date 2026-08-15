@@ -90,7 +90,10 @@
   --border: oklch(0.9 0.015 250);
   --input: oklch(0.9 0.015 250);
   --ring: oklch(0.55 0.17 254);
-  --gradient-hero: linear-gradient(135deg, oklch(0.55 0.17 254), oklch(0.62 0.14 220));
+  --gradient-hero: linear-gradient(120deg, oklch(0.52 0.19 268), oklch(0.6 0.17 232) 45%, oklch(0.72 0.16 190));
+  --gradient-sunset: linear-gradient(120deg, oklch(0.74 0.17 55), oklch(0.66 0.2 20));
+  --gradient-mint: linear-gradient(120deg, oklch(0.72 0.15 165), oklch(0.68 0.14 200));
+  --gradient-glow: radial-gradient(120% 120% at 10% 0%, oklch(0.93 0.06 250 / 0.9), transparent 60%);
   --sidebar: oklch(0.99 0.005 250);
   --sidebar-foreground: oklch(0.22 0.035 255);
   --sidebar-primary: oklch(0.55 0.17 254);
