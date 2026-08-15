@@ -50,7 +50,7 @@ function PeringkatKurir() {
       const entries = await Promise.all(
         list
           .filter((r) => r.avatar_url)
-          .map(async (r) => [r.avatar_url!, await resolveBucketUrl(r.avatar_url!)] as const),
+          .map(async (r) => [r.avatar_url!, await resolveBucketUrl("avatars", r.avatar_url!)] as const),
       );
       setAvatars(Object.fromEntries(entries.filter(([, v]) => v)) as Record<string, string>);
       setLoading(false);
