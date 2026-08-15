@@ -1,5 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingBag, LogOut, ShieldCheck, ClipboardList, Menu, UserRound } from "lucide-react";
+import {
+  ShoppingBag,
+  LogOut,
+  ShieldCheck,
+  ClipboardList,
+  Menu,
+  UserRound,
+  Trophy,
+  MessageSquareHeart,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
