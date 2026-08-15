@@ -71,12 +71,18 @@ function PesananSaya() {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [{ data }, { data: s }] = await Promise.all([
+      const [{ data }, { data: s }, { data: r }] = await Promise.all([
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
+        supabase.from("courier_ratings").select("order_id, stars, comment").eq("customer_id", user.id),
       ]);
       setOrders((data ?? []) as unknown as Order[]);
       setAdminWa(s?.admin_whatsapp ?? "");
+      setRatings(
+        Object.fromEntries(
+          (r ?? []).map((x) => [x.order_id, { stars: x.stars, comment: x.comment ?? "" }]),
+        ),
+      );
     };
     void load();
 
