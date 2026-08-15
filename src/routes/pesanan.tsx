@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { rupiah, waLink, STATUS_LABEL } from "@/lib/format";
+import { StarRating } from "@/components/StarRating";
+import { RateOrderDialog } from "@/components/RateOrderDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
