@@ -53,6 +53,7 @@ function PesananSaya() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [adminWa, setAdminWa] = useState("");
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [ratings, setRatings] = useState<Record<string, { stars: number; comment: string }>>({});
 
   const batalkan = async (id: string) => {
     setCancelling(id);
