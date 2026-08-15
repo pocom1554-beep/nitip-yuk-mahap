@@ -209,6 +209,39 @@ function PesananSaya() {
                 </AlertDialog>
               )}
 
+              {o.status === "selesai" && (
+                <>
+                  {ratings[o.id] && (
+                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-accent p-2.5">
+                      <StarRating value={ratings[o.id]!.stars} size="sm" />
+                      <span className="truncate text-xs text-accent-foreground">
+                        {ratings[o.id]!.comment || "Ulasanmu tersimpan"}
+                      </span>
+                    </div>
+                  )}
+                  <RateOrderDialog
+                    orderId={o.id}
+                    courierId={o.claimed_by}
+                    itemNames={o.items.map((i) => i.name)}
+                    existing={ratings[o.id] ?? null}
+                    onDone={() =>
+                      void supabase
+                        .from("courier_ratings")
+                        .select("order_id, stars, comment")
+                        .eq("order_id", o.id)
+                        .maybeSingle()
+                        .then(({ data }) => {
+                          if (data)
+                            setRatings((p) => ({
+                              ...p,
+                              [o.id]: { stars: data.stars, comment: data.comment ?? "" },
+                            }));
+                        })
+                    }
+                  />
+                </>
+              )}
+
             </article>
           ))}
         </div>
