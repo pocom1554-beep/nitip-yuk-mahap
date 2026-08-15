@@ -166,3 +166,56 @@
   background-image: var(--gradient-hero);
 }
 
+
+@layer base {
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility bg-sunset {
+  background-image: var(--gradient-sunset);
+}
+
+@utility bg-mint {
+  background-image: var(--gradient-mint);
+}
+
+@utility bg-glow {
+  background-image: var(--gradient-glow);
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+@utility surface-pop {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-pop);
+}
+
+@utility card-hover {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+@utility text-gradient {
+  background-image: var(--gradient-hero);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility section-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
