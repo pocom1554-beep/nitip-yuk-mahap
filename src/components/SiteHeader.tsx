@@ -8,7 +8,11 @@ import {
   UserRound,
   Trophy,
   MessageSquareHeart,
+  Store,
+  BadgePercent,
+  Users,
 } from "lucide-react";
+import wordmark from "@/assets/nitipyuk-wordmark.png.asset.json";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
