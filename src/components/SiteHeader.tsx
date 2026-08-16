@@ -107,6 +107,21 @@ export function SiteHeader() {
                       <Link to="/admin/katalog">Kelola katalog</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link to="/admin/toko">
+                        <Store className="mr-2 h-4 w-4" /> Kelola toko/mitra
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/promo">
+                        <BadgePercent className="mr-2 h-4 w-4" /> Promo & voucher
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/tim">
+                        <Users className="mr-2 h-4 w-4" /> Jabatan tim
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link to="/admin/pengaturan">Pengaturan</Link>
                     </DropdownMenuItem>
                   </>
