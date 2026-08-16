@@ -72,7 +72,18 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) {
-      toast.error("Gagal daftar", { description: error.message });
+      const sudahAda = /already|registered|exists/i.test(error.message);
+      toast.error(sudahAda ? "Email sudah terdaftar" : "Gagal daftar", {
+        description: sudahAda
+          ? "Akun dengan email ini sudah ada. Silakan masuk lewat tab Masuk."
+          : error.message,
+      });
+      return;
+    }
+    if (data.user && (data.user.identities?.length ?? 1) === 0) {
+      toast.error("Email sudah terdaftar", {
+        description: "Gunakan tab Masuk untuk login dengan email ini.",
+      });
       return;
     }
     if (data.session) {
