@@ -35,19 +35,20 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-hero text-primary-foreground">
+      <div className="mx-auto flex h-20 max-w-5xl items-center gap-2.5 px-4">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-hero text-primary-foreground shadow-[var(--shadow-soft)]">
             {logoSrc ? (
               <img src={logoSrc} alt={`Logo ${site_name}`} className="h-full w-full object-cover" />
             ) : (
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-6 w-6" />
             )}
           </span>
-          <span className="leading-tight">
-            <span className="block text-base font-extrabold tracking-tight">{site_name}</span>
-            <span className="block text-[10px] text-muted-foreground">{tagline}</span>
-          </span>
+          <img
+            src={wordmark.url}
+            alt={`${site_name} — ${tagline}`}
+            className="h-12 w-auto max-w-[168px] object-contain sm:h-14 sm:max-w-[210px] dark:brightness-0 dark:invert"
+          />
         </Link>
 
         <div className="ml-auto flex items-center gap-2">
