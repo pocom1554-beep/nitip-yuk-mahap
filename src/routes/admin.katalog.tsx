@@ -35,27 +35,41 @@ export const Route = createFileRoute("/admin/katalog")({
   ),
 });
 
+type Opsi = { label: string; price: number };
+
 type Product = {
   id: string;
   name: string;
   store_name: string;
   description: string;
+  detail: string;
   category: string;
   price: number;
+  price_options: Opsi[];
   image_url: string | null;
   is_available: boolean;
 };
 
-const empty = {
+const empty: Product = {
   id: "",
   name: "",
   store_name: "",
   description: "",
+  detail: "",
   category: "Sembako",
   price: 0,
-  image_url: null as string | null,
+  price_options: [],
+  image_url: null,
   is_available: true,
 };
+
+function parseOpsi(raw: unknown): Opsi[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((o) => o as { label?: unknown; price?: unknown })
+    .filter((o) => typeof o?.label === "string")
+    .map((o) => ({ label: String(o.label), price: Number(o.price) || 0 }));
+}
 
 function KelolaKatalog() {
   const [products, setProducts] = useState<Product[]>([]);
