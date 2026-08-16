@@ -27,6 +27,8 @@ export const Route = createFileRoute("/checkout")({
 
 type Settings = { base_fee: number; per_km_fee: number; free_km: number; admin_whatsapp: string };
 
+type Promo = { code: string; kind: string; value: number; min_spend: number; max_discount: number };
+
 function Checkout() {
   const { items, setQty, remove, total, clear } = useCart();
   const { user, profile, loading } = useAuth();
