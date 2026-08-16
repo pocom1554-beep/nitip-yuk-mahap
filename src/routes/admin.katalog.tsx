@@ -81,7 +81,11 @@ function KelolaKatalog() {
 
   const load = async () => {
     const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
-    const list = (data ?? []) as unknown as Product[];
+    const list = ((data ?? []) as unknown as Product[]).map((p) => ({
+      ...p,
+      detail: p.detail ?? "",
+      price_options: parseOpsi(p.price_options),
+    }));
     setProducts(list);
     setImages(await resolveImageUrls(list.map((p) => p.image_url)));
   };
