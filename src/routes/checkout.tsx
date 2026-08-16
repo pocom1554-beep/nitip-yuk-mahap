@@ -158,6 +158,8 @@ function Checkout() {
         distance_km: Number(distance) || 0,
         items_total: total,
         delivery_fee: ongkir,
+        promo_code: promo?.code ?? "",
+        discount: diskon,
         total: grandTotal,
         status: "baru",
         lat: coords?.lat ?? null,
