@@ -243,9 +243,77 @@ function KelolaKatalog() {
                 onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
               />
             </div>
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <div className="flex items-center justify-between">
+                <Label>Opsi harga (mis. kecil/besar)</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setForm({ ...form, price_options: [...form.price_options, { label: "", price: form.price }] })
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5" /> Opsi
+                </Button>
+              </div>
+              {form.price_options.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Kosongkan bila barang hanya punya satu harga.
+                </p>
+              ) : (
+                form.price_options.map((o, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <Input
+                      value={o.label}
+                      placeholder="Nama opsi (contoh: Besar)"
+                      maxLength={40}
+                      onChange={(e) => {
+                        const next = [...form.price_options];
+                        next[idx] = { ...o, label: e.target.value };
+                        setForm({ ...form, price_options: next });
+                      }}
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      className="w-32"
+                      value={o.price}
+                      onChange={(e) => {
+                        const next = [...form.price_options];
+                        next[idx] = { ...o, price: Number(e.target.value) };
+                        setForm({ ...form, price_options: next });
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="text-destructive"
+                      onClick={() =>
+                        setForm({ ...form, price_options: form.price_options.filter((_, i) => i !== idx) })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pd">Deskripsi</Label>
+              <Label htmlFor="pd">Deskripsi singkat</Label>
               <Textarea id="pd" rows={3} maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pdt">Detail lengkap barang</Label>
+              <Textarea
+                id="pdt"
+                rows={4}
+                maxLength={1200}
+                value={form.detail}
+                onChange={(e) => setForm({ ...form, detail: e.target.value })}
+                placeholder="Isi, ukuran, merk, kondisi, catatan penting..."
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pf">Foto barang</Label>
