@@ -107,8 +107,12 @@ function KelolaKatalog() {
         name: form.name.trim(),
         store_name: form.store_name.trim(),
         description: form.description.trim(),
+        detail: form.detail.trim(),
         category: form.category.trim() || "Lainnya",
         price: Number(form.price) || 0,
+        price_options: form.price_options
+          .filter((o) => o.label.trim() !== "")
+          .map((o) => ({ label: o.label.trim(), price: Number(o.price) || 0 })),
         image_url: imagePath,
         is_available: form.is_available,
       };
