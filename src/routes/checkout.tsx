@@ -90,7 +90,43 @@ function Checkout() {
   }, [profile]);
 
   const ongkir = hitungOngkir(Number(distance), settings);
-  const grandTotal = total + ongkir;
+  const diskon = promo
+    ? Math.min(
+        promo.kind === "persen"
+          ? Math.round((total * Number(promo.value)) / 100)
+          : Number(promo.value),
+        promo.max_discount > 0 ? Number(promo.max_discount) : Number.MAX_SAFE_INTEGER,
+        total,
+      )
+    : 0;
+  const grandTotal = Math.max(0, total + ongkir - diskon);
+
+  const pakaiVoucher = async () => {
+    const code = kode.trim().toUpperCase();
+    if (!code) return;
+    const { data } = await supabase
+      .from("promos")
+      .select("code, kind, value, min_spend, max_discount, is_active, expires_at")
+      .eq("code", code)
+      .maybeSingle();
+    if (!data || !data.is_active) {
+      setPromo(null);
+      toast.error("Kode voucher tidak ditemukan atau sudah nonaktif");
+      return;
+    }
+    if (data.expires_at && new Date(data.expires_at).getTime() < Date.now()) {
+      setPromo(null);
+      toast.error("Voucher sudah kedaluwarsa");
+      return;
+    }
+    if (total < Number(data.min_spend)) {
+      setPromo(null);
+      toast.error(`Minimal belanja ${rupiah(Number(data.min_spend))} untuk voucher ini`);
+      return;
+    }
+    setPromo(data as unknown as Promo);
+    toast.success(`Voucher ${code} dipakai`);
+  };
 
   const kirim = async () => {
     if (!user) {
