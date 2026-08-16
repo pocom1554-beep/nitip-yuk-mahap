@@ -110,6 +110,7 @@ export type Database = {
           customer_name: string
           customer_whatsapp: string
           delivery_fee: number
+          discount: number
           distance_km: number
           id: string
           items: Json
@@ -118,6 +119,7 @@ export type Database = {
           lng: number | null
           map_link: string
           note: string
+          promo_code: string
           status: string
           total: number
           updated_at: string
@@ -131,6 +133,7 @@ export type Database = {
           customer_name?: string
           customer_whatsapp?: string
           delivery_fee?: number
+          discount?: number
           distance_km?: number
           id?: string
           items?: Json
@@ -139,6 +142,7 @@ export type Database = {
           lng?: number | null
           map_link?: string
           note?: string
+          promo_code?: string
           status?: string
           total?: number
           updated_at?: string
@@ -152,6 +156,7 @@ export type Database = {
           customer_name?: string
           customer_whatsapp?: string
           delivery_fee?: number
+          discount?: number
           distance_km?: number
           id?: string
           items?: Json
@@ -160,6 +165,7 @@ export type Database = {
           lng?: number | null
           map_link?: string
           note?: string
+          promo_code?: string
           status?: string
           total?: number
           updated_at?: string
@@ -171,11 +177,13 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          detail: string
           id: string
           image_url: string | null
           is_available: boolean
           name: string
           price: number
+          price_options: Json
           store_name: string
           updated_at: string
         }
@@ -183,11 +191,13 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          detail?: string
           id?: string
           image_url?: string | null
           is_available?: boolean
           name: string
           price?: number
+          price_options?: Json
           store_name?: string
           updated_at?: string
         }
@@ -195,11 +205,13 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          detail?: string
           id?: string
           image_url?: string | null
           is_available?: boolean
           name?: string
           price?: number
+          price_options?: Json
           store_name?: string
           updated_at?: string
         }
@@ -209,29 +221,89 @@ export type Database = {
         Row: {
           address: string
           avatar_url: string | null
+          bio: string
           created_at: string
           full_name: string
           id: string
           is_owner: boolean
+          job_title: string
           whatsapp: string
         }
         Insert: {
           address?: string
           avatar_url?: string | null
+          bio?: string
           created_at?: string
           full_name?: string
           id: string
           is_owner?: boolean
+          job_title?: string
           whatsapp?: string
         }
         Update: {
           address?: string
           avatar_url?: string | null
+          bio?: string
           created_at?: string
           full_name?: string
           id?: string
           is_owner?: boolean
+          job_title?: string
           whatsapp?: string
+        }
+        Relationships: []
+      }
+      promos: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          max_discount: number
+          min_spend: number
+          quota: number
+          starts_at: string | null
+          title: string
+          updated_at: string
+          used_count: number
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          max_discount?: number
+          min_spend?: number
+          quota?: number
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+          used_count?: number
+          value?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          max_discount?: number
+          min_spend?: number
+          quota?: number
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+          used_count?: number
+          value?: number
         }
         Relationships: []
       }
@@ -304,6 +376,42 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          address: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          name: string
+          open_hours: string
+          updated_at: string
+          whatsapp: string
+        }
+        Insert: {
+          address?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          open_hours?: string
+          updated_at?: string
+          whatsapp?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          open_hours?: string
+          updated_at?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -355,6 +463,17 @@ export type Database = {
         Returns: {
           product_id: string
           qty: number
+        }[]
+      }
+      public_reviews: {
+        Args: { _limit?: number }
+        Returns: {
+          comment: string
+          created_at: string
+          display_name: string
+          id: string
+          stars: number
+          store_name: string
         }[]
       }
       store_stats: {
