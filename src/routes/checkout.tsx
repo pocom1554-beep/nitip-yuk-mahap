@@ -48,6 +48,8 @@ function Checkout() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [mapLink, setMapLink] = useState("");
   const [locating, setLocating] = useState(false);
+  const [kode, setKode] = useState("");
+  const [promo, setPromo] = useState<Promo | null>(null);
 
   const ambilLokasi = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
