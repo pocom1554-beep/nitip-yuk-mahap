@@ -398,7 +398,7 @@ function Katalog() {
                   </span>
                   {storeInfo[s.store_name]?.description && (
                     <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
-                      {storeInfo[s.store_name].description}
+                      {storeInfo[s.store_name]?.description}
                     </span>
                   )}
                 </span>
