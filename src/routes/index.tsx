@@ -478,8 +478,8 @@ function Katalog() {
         {store !== "Semua toko" && storeInfo[store] && (
           <div className="surface-card mt-4 p-4">
             <p className="text-base font-bold">{store}</p>
-            {storeInfo[store].description && (
-              <p className="mt-1 text-sm text-muted-foreground">{storeInfo[store].description}</p>
+            {storeInfo[store]?.description && (
+              <p className="mt-1 text-sm text-muted-foreground">{storeInfo[store]?.description}</p>
             )}
             <Button asChild size="sm" variant="outline" className="mt-3">
               <Link to="/toko/$name" params={{ name: encodeURIComponent(store) }}>
