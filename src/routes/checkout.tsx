@@ -27,6 +27,8 @@ export const Route = createFileRoute("/checkout")({
 
 type Settings = { base_fee: number; per_km_fee: number; free_km: number; admin_whatsapp: string };
 
+type Promo = { code: string; kind: string; value: number; min_spend: number; max_discount: number };
+
 function Checkout() {
   const { items, setQty, remove, total, clear } = useCart();
   const { user, profile, loading } = useAuth();
@@ -46,6 +48,8 @@ function Checkout() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [mapLink, setMapLink] = useState("");
   const [locating, setLocating] = useState(false);
+  const [kode, setKode] = useState("");
+  const [promo, setPromo] = useState<Promo | null>(null);
 
   const ambilLokasi = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -90,7 +94,43 @@ function Checkout() {
   }, [profile]);
 
   const ongkir = hitungOngkir(Number(distance), settings);
-  const grandTotal = total + ongkir;
+  const diskon = promo
+    ? Math.min(
+        promo.kind === "persen"
+          ? Math.round((total * Number(promo.value)) / 100)
+          : Number(promo.value),
+        promo.max_discount > 0 ? Number(promo.max_discount) : Number.MAX_SAFE_INTEGER,
+        total,
+      )
+    : 0;
+  const grandTotal = Math.max(0, total + ongkir - diskon);
+
+  const pakaiVoucher = async () => {
+    const code = kode.trim().toUpperCase();
+    if (!code) return;
+    const { data } = await supabase
+      .from("promos")
+      .select("code, kind, value, min_spend, max_discount, is_active, expires_at")
+      .eq("code", code)
+      .maybeSingle();
+    if (!data || !data.is_active) {
+      setPromo(null);
+      toast.error("Kode voucher tidak ditemukan atau sudah nonaktif");
+      return;
+    }
+    if (data.expires_at && new Date(data.expires_at).getTime() < Date.now()) {
+      setPromo(null);
+      toast.error("Voucher sudah kedaluwarsa");
+      return;
+    }
+    if (total < Number(data.min_spend)) {
+      setPromo(null);
+      toast.error(`Minimal belanja ${rupiah(Number(data.min_spend))} untuk voucher ini`);
+      return;
+    }
+    setPromo(data as unknown as Promo);
+    toast.success(`Voucher ${code} dipakai`);
+  };
 
   const kirim = async () => {
     if (!user) {
@@ -118,6 +158,8 @@ function Checkout() {
         distance_km: Number(distance) || 0,
         items_total: total,
         delivery_fee: ongkir,
+        promo_code: promo?.code ?? "",
+        discount: diskon,
         total: grandTotal,
         status: "baru",
         lat: coords?.lat ?? null,
@@ -264,6 +306,26 @@ function Checkout() {
       </section>
 
       <section className="surface-card mt-4 space-y-2 p-4 text-sm">
+        <div className="space-y-1.5">
+          <Label htmlFor="vc">Kode voucher</Label>
+          <div className="flex gap-2">
+            <Input
+              id="vc"
+              value={kode}
+              onChange={(e) => setKode(e.target.value.toUpperCase())}
+              placeholder="NITIPHEMAT"
+              maxLength={24}
+            />
+            <Button type="button" variant="outline" onClick={() => void pakaiVoucher()}>
+              Pakai
+            </Button>
+          </div>
+          {promo && (
+            <p className="text-xs font-semibold text-primary">
+              Voucher {promo.code} aktif — potongan {rupiah(diskon)}
+            </p>
+          )}
+        </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Subtotal barang</span>
           <span className="font-semibold">{rupiah(total)}</span>
@@ -272,6 +334,12 @@ function Checkout() {
           <span className="text-muted-foreground">Ongkos titip ({distance || 0} km)</span>
           <span className="font-semibold">{rupiah(ongkir)}</span>
         </div>
+        {diskon > 0 && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Potongan voucher</span>
+            <span className="font-semibold text-primary">-{rupiah(diskon)}</span>
+          </div>
+        )}
         <div className="flex justify-between border-t border-border pt-2 text-base">
           <span className="font-semibold">Total perkiraan</span>
           <span className="font-extrabold text-primary">{rupiah(grandTotal)}</span>

@@ -19,6 +19,10 @@ import { Route as PesananRouteImport } from './routes/pesanan'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminKatalogRouteImport } from './routes/admin.katalog'
 import { Route as AdminPengaturanRouteImport } from './routes/admin.pengaturan'
+import { Route as AdminPromoRouteImport } from './routes/admin.promo'
+import { Route as AdminTimRouteImport } from './routes/admin.tim'
+import { Route as AdminTokoRouteImport } from './routes/admin.toko'
+import { Route as TokoNameRouteImport } from './routes/toko.$name'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +74,26 @@ const AdminPengaturanRoute = AdminPengaturanRouteImport.update({
   path: '/admin/pengaturan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPromoRoute = AdminPromoRouteImport.update({
+  id: '/admin/promo',
+  path: '/admin/promo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTimRoute = AdminTimRouteImport.update({
+  id: '/admin/tim',
+  path: '/admin/tim',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTokoRoute = AdminTokoRouteImport.update({
+  id: '/admin/toko',
+  path: '/admin/toko',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TokoNameRoute = TokoNameRouteImport.update({
+  id: '/toko/$name',
+  path: '/toko/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,6 +105,10 @@ export interface FileRoutesByFullPath {
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
   '/admin/pengaturan': typeof AdminPengaturanRoute
+  '/admin/promo': typeof AdminPromoRoute
+  '/admin/tim': typeof AdminTimRoute
+  '/admin/toko': typeof AdminTokoRoute
+  '/toko/$name': typeof TokoNameRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +121,10 @@ export interface FileRoutesByTo {
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
   '/admin/pengaturan': typeof AdminPengaturanRoute
+  '/admin/promo': typeof AdminPromoRoute
+  '/admin/tim': typeof AdminTimRoute
+  '/admin/toko': typeof AdminTokoRoute
+  '/toko/$name': typeof TokoNameRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -106,6 +138,10 @@ export interface FileRoutesById {
   '/pesanan': typeof PesananRoute
   '/admin/katalog': typeof AdminKatalogRoute
   '/admin/pengaturan': typeof AdminPengaturanRoute
+  '/admin/promo': typeof AdminPromoRoute
+  '/admin/tim': typeof AdminTimRoute
+  '/admin/toko': typeof AdminTokoRoute
+  '/toko/$name': typeof TokoNameRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +156,10 @@ export interface FileRouteTypes {
     | '/pesanan'
     | '/admin/katalog'
     | '/admin/pengaturan'
+    | '/admin/promo'
+    | '/admin/tim'
+    | '/admin/toko'
+    | '/toko/$name'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +172,10 @@ export interface FileRouteTypes {
     | '/pesanan'
     | '/admin/katalog'
     | '/admin/pengaturan'
+    | '/admin/promo'
+    | '/admin/tim'
+    | '/admin/toko'
+    | '/toko/$name'
     | '/admin'
   id:
     | '__root__'
@@ -144,6 +188,10 @@ export interface FileRouteTypes {
     | '/pesanan'
     | '/admin/katalog'
     | '/admin/pengaturan'
+    | '/admin/promo'
+    | '/admin/tim'
+    | '/admin/toko'
+    | '/toko/$name'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +205,10 @@ export interface RootRouteChildren {
   PesananRoute: typeof PesananRoute
   AdminKatalogRoute: typeof AdminKatalogRoute
   AdminPengaturanRoute: typeof AdminPengaturanRoute
+  AdminPromoRoute: typeof AdminPromoRoute
+  AdminTimRoute: typeof AdminTimRoute
+  AdminTokoRoute: typeof AdminTokoRoute
+  TokoNameRoute: typeof TokoNameRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -232,6 +284,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPengaturanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/promo': {
+      id: '/admin/promo'
+      path: '/admin/promo'
+      fullPath: '/admin/promo'
+      preLoaderRoute: typeof AdminPromoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tim': {
+      id: '/admin/tim'
+      path: '/admin/tim'
+      fullPath: '/admin/tim'
+      preLoaderRoute: typeof AdminTimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/toko': {
+      id: '/admin/toko'
+      path: '/admin/toko'
+      fullPath: '/admin/toko'
+      preLoaderRoute: typeof AdminTokoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/toko/$name': {
+      id: '/toko/$name'
+      path: '/toko/$name'
+      fullPath: '/toko/$name'
+      preLoaderRoute: typeof TokoNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -245,6 +325,10 @@ const rootRouteChildren: RootRouteChildren = {
   PesananRoute: PesananRoute,
   AdminKatalogRoute: AdminKatalogRoute,
   AdminPengaturanRoute: AdminPengaturanRoute,
+  AdminPromoRoute: AdminPromoRoute,
+  AdminTimRoute: AdminTimRoute,
+  AdminTokoRoute: AdminTokoRoute,
+  TokoNameRoute: TokoNameRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -12,6 +12,9 @@ import {
   Quote,
   MessageSquareHeart,
   Sparkles,
+  BadgePercent,
+  Copy,
+  Info,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveImageUrls } from "@/lib/images";
@@ -21,6 +24,13 @@ import { StarRating } from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,7 +39,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Titip belanjaan apa saja di Kecamatan Nanga Mahap. Pilih dari katalog, lihat barang best seller dan toko terpopuler, lalu chat admin via WhatsApp.",
+          "Titip belanjaan apa saja di Kecamatan Nanga Mahap. Lihat detail barang dan toko mitra, pakai voucher promo, lalu chat admin via WhatsApp.",
       },
       { property: "og:title", content: "NitipYuk — Jasa Titip Kecamatan Nanga Mahap" },
       { property: "og:description", content: "Mau apa aja, tinggal titip!" },
@@ -38,59 +48,103 @@ export const Route = createFileRoute("/")({
   component: Katalog,
 });
 
+type Opsi = { label: string; price: number };
+
 type Product = {
   id: string;
   name: string;
   store_name: string;
   description: string;
+  detail: string;
   category: string;
   price: number;
+  price_options: unknown;
   image_url: string | null;
   is_available: boolean;
 };
 
 type Review = {
   id: string;
-  customer_name: string;
+  display_name: string;
   store_name: string;
   stars: number;
   comment: string;
   created_at: string;
 };
 
+type Promo = {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  kind: string;
+  value: number;
+  min_spend: number;
+  expires_at: string | null;
+};
+
+type StoreInfo = { name: string; description: string; open_hours: string };
+
+function parseOpsi(raw: unknown): Opsi[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((o) => o as { label?: unknown; price?: unknown })
+    .filter((o) => typeof o?.label === "string" && String(o.label).trim() !== "")
+    .map((o) => ({ label: String(o.label), price: Number(o.price) || 0 }));
+}
+
 function Katalog() {
   const [products, setProducts] = useState<Product[]>([]);
   const [images, setImages] = useState<Record<string, string>>({});
   const [sales, setSales] = useState<Record<string, number>>({});
   const [stores, setStores] = useState<{ store_name: string; orders_count: number; items_count: number }[]>([]);
+  const [storeInfo, setStoreInfo] = useState<Record<string, StoreInfo>>({});
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [promos, setPromos] = useState<Promo[]>([]);
   const [adminWa, setAdminWa] = useState("");
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("Semua");
   const [store, setStore] = useState("Semua toko");
   const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState<Product | null>(null);
+  const [pilihOpsi, setPilihOpsi] = useState(0);
   const { add } = useCart();
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: prods }, { data: setting }, { data: sale }, { data: stats }, { data: revs }] =
-        await Promise.all([
-          supabase.from("products").select("*").order("created_at", { ascending: false }),
-          supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
-          supabase.rpc("product_sales"),
-          supabase.rpc("store_stats"),
-          supabase
-            .from("courier_ratings")
-            .select("id, customer_name, store_name, stars, comment, created_at")
-            .order("created_at", { ascending: false })
-            .limit(8),
-        ]);
+      const [
+        { data: prods },
+        { data: setting },
+        { data: sale },
+        { data: stats },
+        { data: revs },
+        { data: promoRows },
+        { data: storeRows },
+      ] = await Promise.all([
+        supabase.from("products").select("*").order("created_at", { ascending: false }),
+        supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
+        supabase.rpc("product_sales"),
+        supabase.rpc("store_stats"),
+        supabase.rpc("public_reviews", { _limit: 8 }),
+        supabase
+          .from("promos")
+          .select("id, code, title, description, kind, value, min_spend, expires_at")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
+        supabase.from("stores").select("name, description, open_hours"),
+      ]);
       const list = (prods ?? []) as unknown as Product[];
       setProducts(list);
       setAdminWa(setting?.admin_whatsapp ?? "");
       setSales(Object.fromEntries((sale ?? []).map((s) => [s.product_id, Number(s.qty)])));
       setStores((stats ?? []) as { store_name: string; orders_count: number; items_count: number }[]);
       setReviews(((revs ?? []) as unknown as Review[]).filter((r) => r.comment));
+      setPromos(((promoRows ?? []) as unknown as Promo[]).filter(
+        (p) => !p.expires_at || new Date(p.expires_at).getTime() > Date.now(),
+      ));
+      setStoreInfo(
+        Object.fromEntries(((storeRows ?? []) as unknown as StoreInfo[]).map((s) => [s.name, s])),
+      );
       setImages(await resolveImageUrls(list.map((p) => p.image_url)));
       setLoading(false);
     };
@@ -123,67 +177,92 @@ function Katalog() {
       (cat === "Semua" || p.category === cat) &&
       (store === "Semua toko" || p.store_name === store) &&
       (p.name.toLowerCase().includes(q.toLowerCase()) ||
-        p.description.toLowerCase().includes(q.toLowerCase())),
+        (p.description ?? "").toLowerCase().includes(q.toLowerCase())),
   );
 
-  const card = (p: Product) => (
-    <article key={p.id} className="surface-pop card-hover flex flex-col overflow-hidden">
-      <div className="relative aspect-square bg-muted">
-        {p.image_url && images[p.image_url] ? (
-          <img
-            src={images[p.image_url]}
-            alt={p.name}
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">
-            <ImageIcon className="h-8 w-8" />
+  const bukaDetail = (p: Product) => {
+    setDetail(p);
+    setPilihOpsi(0);
+  };
+
+  const tambah = (p: Product, opsi?: Opsi) => {
+    add({
+      id: opsi ? `${p.id}::${opsi.label}` : p.id,
+      name: opsi ? `${p.name} (${opsi.label})` : p.name,
+      price: opsi ? opsi.price : Number(p.price),
+      image: p.image_url,
+    });
+    toast.success(`${p.name} masuk keranjang`);
+  };
+
+  const card = (p: Product) => {
+    const opsi = parseOpsi(p.price_options);
+    const mulai = opsi.length ? Math.min(...opsi.map((o) => o.price)) : Number(p.price);
+    return (
+      <article key={p.id} className="surface-pop card-hover flex flex-col overflow-hidden">
+        <button type="button" onClick={() => bukaDetail(p)} className="relative aspect-square bg-muted text-left">
+          {p.image_url && images[p.image_url] ? (
+            <img src={images[p.image_url]} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              <ImageIcon className="h-8 w-8" />
+            </div>
+          )}
+          {bestSellerIds.has(p.id) && (
+            <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-sunset px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-[var(--shadow-soft)]">
+              <Flame className="h-3 w-3" /> Best seller
+            </span>
+          )}
+          {opsi.length > 0 && (
+            <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2 py-1 text-[10px] font-bold text-primary">
+              {opsi.length} pilihan harga
+            </span>
+          )}
+          {!p.is_available && (
+            <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
+              Kosong
+            </span>
+          )}
+        </button>
+        <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{p.category}</p>
+          <h3 className="font-display line-clamp-2 text-base font-extrabold leading-snug">{p.name}</h3>
+          {p.store_name && (
+            <Link
+              to="/toko/$name"
+              params={{ name: encodeURIComponent(p.store_name) }}
+              className="flex items-center gap-1 truncate text-xs font-semibold text-muted-foreground hover:text-primary"
+            >
+              <Store className="h-3.5 w-3.5 shrink-0" />
+              {p.store_name}
+            </Link>
+          )}
+          {p.description && (
+            <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{p.description}</p>
+          )}
+          <p className="font-display mt-auto pt-1 text-lg font-extrabold text-primary">
+            {opsi.length ? `Mulai ${rupiah(mulai)}` : rupiah(p.price)}
+          </p>
+          <div className="mt-1 flex gap-1.5">
+            <Button size="sm" variant="outline" className="px-2.5" onClick={() => bukaDetail(p)}>
+              <Info className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1 font-bold"
+              disabled={!p.is_available}
+              onClick={() => (opsi.length ? bukaDetail(p) : tambah(p))}
+            >
+              <Plus className="h-4 w-4" />
+              {p.is_available ? (opsi.length ? "Pilih" : "Titip") : "Kosong"}
+            </Button>
           </div>
-        )}
-        {bestSellerIds.has(p.id) && (
-          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-sunset px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-[var(--shadow-soft)]">
-            <Flame className="h-3 w-3" /> Best seller
-          </span>
-        )}
-        {!p.is_available && (
-          <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
-            Kosong
-          </span>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-3.5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{p.category}</p>
-        <h3 className="font-display line-clamp-2 text-base font-extrabold leading-snug">{p.name}</h3>
-        {p.store_name && (
-          <p className="flex items-center gap-1 truncate text-xs font-medium text-muted-foreground">
-            <Store className="h-3.5 w-3.5 shrink-0" />
-            {p.store_name}
-          </p>
-        )}
-        {p.description && (
-          <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-            {p.description}
-          </p>
-        )}
-        <p className="font-display mt-auto pt-1 text-lg font-extrabold text-primary">
-          {rupiah(p.price)}
-        </p>
-        <Button
-          size="sm"
-          className="mt-1 w-full font-bold"
-          disabled={!p.is_available}
-          onClick={() => {
-            add({ id: p.id, name: p.name, price: Number(p.price), image: p.image_url });
-            toast.success(`${p.name} masuk keranjang`);
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          {p.is_available ? "Titip" : "Kosong"}
-        </Button>
-      </div>
-    </article>
-  );
+        </div>
+      </article>
+    );
+  };
+
+  const detailOpsi = detail ? parseOpsi(detail.price_options) : [];
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-20">
@@ -236,6 +315,45 @@ function Katalog() {
         </div>
       </section>
 
+      {promos.length > 0 && (
+        <section className="mt-10">
+          <h2 className="section-title flex items-center gap-2">
+            <BadgePercent className="h-6 w-6 text-primary" /> Promo & voucher
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Salin kodenya, lalu tempel di halaman keranjang saat checkout.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {promos.map((p) => (
+              <article
+                key={p.id}
+                className="surface-pop card-hover relative overflow-hidden bg-sunset p-4 text-primary-foreground"
+              >
+                <p className="text-xs font-bold uppercase tracking-widest opacity-80">
+                  {p.kind === "persen" ? `Diskon ${p.value}%` : `Potongan ${rupiah(p.value)}`}
+                </p>
+                <p className="font-display mt-1 text-xl font-black leading-tight">{p.title || p.code}</p>
+                {p.description && <p className="mt-1 text-xs opacity-90">{p.description}</p>}
+                <p className="mt-2 text-[11px] opacity-90">
+                  Min. belanja {rupiah(p.min_spend)}
+                  {p.expires_at && ` · s/d ${new Date(p.expires_at).toLocaleDateString("id-ID")}`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(p.code);
+                    toast.success(`Kode ${p.code} disalin`);
+                  }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary-foreground/60 bg-primary-foreground/10 px-3 py-2 text-sm font-black tracking-wider"
+                >
+                  <Copy className="h-3.5 w-3.5" /> {p.code}
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
       {bestSellers.length > 0 && (
         <section className="mt-10">
           <h2 className="section-title flex items-center gap-2">
@@ -255,15 +373,16 @@ function Katalog() {
           <h2 className="section-title flex items-center gap-2">
             <Store className="h-6 w-6 text-primary" /> Toko paling laris
           </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ketuk kartu toko untuk melihat profil lengkap dan semua barangnya.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {stores.slice(0, 6).map((s, i) => (
-              <button
+              <Link
                 key={s.store_name}
-                onClick={() => {
-                  setStore(s.store_name);
-                  setCat("Semua");
-                }}
-                className="surface-card card-hover flex items-center gap-3 p-4 text-left"
+                to="/toko/$name"
+                params={{ name: encodeURIComponent(s.store_name) }}
+                className="surface-card card-hover flex gap-3 p-4 text-left"
               >
                 <span
                   className={`font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg font-black text-primary-foreground ${
@@ -277,8 +396,13 @@ function Katalog() {
                   <span className="block text-xs text-muted-foreground">
                     {s.orders_count} pesanan · {s.items_count} barang terjual
                   </span>
+                  {storeInfo[s.store_name]?.description && (
+                    <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
+                      {storeInfo[s.store_name]?.description}
+                    </span>
+                  )}
                 </span>
-              </button>
+              </Link>
             ))}
           </div>
         </section>
@@ -295,7 +419,7 @@ function Katalog() {
                 <StarRating value={r.stars} size="sm" />
                 <p className="mt-2 text-sm leading-relaxed">"{r.comment}"</p>
                 <p className="mt-2 text-xs font-semibold text-muted-foreground">
-                  {r.customer_name || "Konsumen"}
+                  {r.display_name || "Konsumen"}
                   {r.store_name && ` · ${r.store_name}`}
                 </p>
               </article>
@@ -351,6 +475,20 @@ function Katalog() {
           </div>
         )}
 
+        {store !== "Semua toko" && storeInfo[store] && (
+          <div className="surface-card mt-4 p-4">
+            <p className="text-base font-bold">{store}</p>
+            {storeInfo[store]?.description && (
+              <p className="mt-1 text-sm text-muted-foreground">{storeInfo[store]?.description}</p>
+            )}
+            <Button asChild size="sm" variant="outline" className="mt-3">
+              <Link to="/toko/$name" params={{ name: encodeURIComponent(store) }}>
+                Lihat profil toko
+              </Link>
+            </Button>
+          </div>
+        )}
+
         {loading ? (
           <p className="mt-10 text-center text-sm text-muted-foreground">Memuat katalog...</p>
         ) : filtered.length === 0 ? (
@@ -376,6 +514,76 @@ function Katalog() {
           </div>
         )}
       </section>
+
+      <Dialog open={!!detail} onOpenChange={(v) => !v && setDetail(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          {detail && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="font-display text-2xl font-black">{detail.name}</DialogTitle>
+                <DialogDescription>
+                  {detail.category}
+                  {detail.store_name && ` · ${detail.store_name}`}
+                </DialogDescription>
+              </DialogHeader>
+              {detail.image_url && images[detail.image_url] && (
+                <img
+                  src={images[detail.image_url]}
+                  alt={detail.name}
+                  className="aspect-video w-full rounded-2xl object-cover"
+                />
+              )}
+              {detail.description && <p className="text-sm leading-relaxed">{detail.description}</p>}
+              {detail.detail && (
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                  {detail.detail}
+                </p>
+              )}
+
+              {detailOpsi.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-bold">Pilih opsi harga</p>
+                  {detailOpsi.map((o, i) => (
+                    <button
+                      key={o.label}
+                      type="button"
+                      onClick={() => setPilihOpsi(i)}
+                      className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                        pilihOpsi === i ? "border-primary bg-primary/10" : "border-border bg-card"
+                      }`}
+                    >
+                      <span className="text-sm font-semibold">{o.label}</span>
+                      <span className="font-display font-extrabold text-primary">{rupiah(o.price)}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-display text-2xl font-black text-primary">{rupiah(detail.price)}</p>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  className="flex-1 font-bold"
+                  disabled={!detail.is_available}
+                  onClick={() => {
+                    tambah(detail, detailOpsi[pilihOpsi]);
+                    setDetail(null);
+                  }}
+                >
+                  <Plus className="h-4 w-4" /> {detail.is_available ? "Masukkan keranjang" : "Kosong"}
+                </Button>
+                {detail.store_name && (
+                  <Button asChild variant="outline">
+                    <Link to="/toko/$name" params={{ name: encodeURIComponent(detail.store_name) }}>
+                      <Store className="h-4 w-4" /> Profil toko
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

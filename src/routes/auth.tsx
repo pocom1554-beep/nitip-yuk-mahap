@@ -72,7 +72,18 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) {
-      toast.error("Gagal daftar", { description: error.message });
+      const sudahAda = /already|registered|exists/i.test(error.message);
+      toast.error(sudahAda ? "Email sudah terdaftar" : "Gagal daftar", {
+        description: sudahAda
+          ? "Akun dengan email ini sudah ada. Silakan masuk lewat tab Masuk."
+          : error.message,
+      });
+      return;
+    }
+    if (data.user && (data.user.identities?.length ?? 1) === 0) {
+      toast.error("Email sudah terdaftar", {
+        description: "Gunakan tab Masuk untuk login dengan email ini.",
+      });
       return;
     }
     if (data.session) {
@@ -95,6 +106,12 @@ function AuthPage() {
         <h1 className="text-2xl font-extrabold tracking-tight">NitipYuk</h1>
         <p className="text-sm text-muted-foreground">Mau apa aja, tinggal titip!</p>
       </Link>
+
+      {user && (
+        <p className="mb-3 rounded-xl border border-primary/30 bg-primary/10 p-3 text-center text-sm font-semibold text-primary">
+          Kamu sudah login sebagai {user.email}. Mengalihkan ke beranda...
+        </p>
+      )}
 
       <div className="surface-card p-5">
         <Tabs defaultValue="masuk">

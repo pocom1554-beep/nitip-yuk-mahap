@@ -35,27 +35,41 @@ export const Route = createFileRoute("/admin/katalog")({
   ),
 });
 
+type Opsi = { label: string; price: number };
+
 type Product = {
   id: string;
   name: string;
   store_name: string;
   description: string;
+  detail: string;
   category: string;
   price: number;
+  price_options: Opsi[];
   image_url: string | null;
   is_available: boolean;
 };
 
-const empty = {
+const empty: Product = {
   id: "",
   name: "",
   store_name: "",
   description: "",
+  detail: "",
   category: "Sembako",
   price: 0,
-  image_url: null as string | null,
+  price_options: [],
+  image_url: null,
   is_available: true,
 };
+
+function parseOpsi(raw: unknown): Opsi[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((o) => o as { label?: unknown; price?: unknown })
+    .filter((o) => typeof o?.label === "string")
+    .map((o) => ({ label: String(o.label), price: Number(o.price) || 0 }));
+}
 
 function KelolaKatalog() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -67,7 +81,11 @@ function KelolaKatalog() {
 
   const load = async () => {
     const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
-    const list = (data ?? []) as unknown as Product[];
+    const list = ((data ?? []) as unknown as Product[]).map((p) => ({
+      ...p,
+      detail: p.detail ?? "",
+      price_options: parseOpsi(p.price_options),
+    }));
     setProducts(list);
     setImages(await resolveImageUrls(list.map((p) => p.image_url)));
   };
@@ -89,8 +107,12 @@ function KelolaKatalog() {
         name: form.name.trim(),
         store_name: form.store_name.trim(),
         description: form.description.trim(),
+        detail: form.detail.trim(),
         category: form.category.trim() || "Lainnya",
         price: Number(form.price) || 0,
+        price_options: form.price_options
+          .filter((o) => o.label.trim() !== "")
+          .map((o) => ({ label: o.label.trim(), price: Number(o.price) || 0 })),
         image_url: imagePath,
         is_available: form.is_available,
       };
@@ -221,9 +243,77 @@ function KelolaKatalog() {
                 onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
               />
             </div>
+            <div className="space-y-2 rounded-xl border border-border p-3">
+              <div className="flex items-center justify-between">
+                <Label>Opsi harga (mis. kecil/besar)</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setForm({ ...form, price_options: [...form.price_options, { label: "", price: form.price }] })
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5" /> Opsi
+                </Button>
+              </div>
+              {form.price_options.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Kosongkan bila barang hanya punya satu harga.
+                </p>
+              ) : (
+                form.price_options.map((o, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <Input
+                      value={o.label}
+                      placeholder="Nama opsi (contoh: Besar)"
+                      maxLength={40}
+                      onChange={(e) => {
+                        const next = [...form.price_options];
+                        next[idx] = { ...o, label: e.target.value };
+                        setForm({ ...form, price_options: next });
+                      }}
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      className="w-32"
+                      value={o.price}
+                      onChange={(e) => {
+                        const next = [...form.price_options];
+                        next[idx] = { ...o, price: Number(e.target.value) };
+                        setForm({ ...form, price_options: next });
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="text-destructive"
+                      onClick={() =>
+                        setForm({ ...form, price_options: form.price_options.filter((_, i) => i !== idx) })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pd">Deskripsi</Label>
+              <Label htmlFor="pd">Deskripsi singkat</Label>
               <Textarea id="pd" rows={3} maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pdt">Detail lengkap barang</Label>
+              <Textarea
+                id="pdt"
+                rows={4}
+                maxLength={1200}
+                value={form.detail}
+                onChange={(e) => setForm({ ...form, detail: e.target.value })}
+                placeholder="Isi, ukuran, merk, kondisi, catatan penting..."
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pf">Foto barang</Label>
