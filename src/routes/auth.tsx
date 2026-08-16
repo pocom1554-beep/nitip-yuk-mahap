@@ -96,6 +96,12 @@ function AuthPage() {
         <p className="text-sm text-muted-foreground">Mau apa aja, tinggal titip!</p>
       </Link>
 
+      {user && (
+        <p className="mb-3 rounded-xl border border-primary/30 bg-primary/10 p-3 text-center text-sm font-semibold text-primary">
+          Kamu sudah login sebagai {user.email}. Mengalihkan ke beranda...
+        </p>
+      )}
+
       <div className="surface-card p-5">
         <Tabs defaultValue="masuk">
           <TabsList className="grid w-full grid-cols-2">
