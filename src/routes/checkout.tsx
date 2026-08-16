@@ -306,6 +306,26 @@ function Checkout() {
       </section>
 
       <section className="surface-card mt-4 space-y-2 p-4 text-sm">
+        <div className="space-y-1.5">
+          <Label htmlFor="vc">Kode voucher</Label>
+          <div className="flex gap-2">
+            <Input
+              id="vc"
+              value={kode}
+              onChange={(e) => setKode(e.target.value.toUpperCase())}
+              placeholder="NITIPHEMAT"
+              maxLength={24}
+            />
+            <Button type="button" variant="outline" onClick={() => void pakaiVoucher()}>
+              Pakai
+            </Button>
+          </div>
+          {promo && (
+            <p className="text-xs font-semibold text-primary">
+              Voucher {promo.code} aktif — potongan {rupiah(diskon)}
+            </p>
+          )}
+        </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Subtotal barang</span>
           <span className="font-semibold">{rupiah(total)}</span>
@@ -314,6 +334,12 @@ function Checkout() {
           <span className="text-muted-foreground">Ongkos titip ({distance || 0} km)</span>
           <span className="font-semibold">{rupiah(ongkir)}</span>
         </div>
+        {diskon > 0 && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Potongan voucher</span>
+            <span className="font-semibold text-primary">-{rupiah(diskon)}</span>
+          </div>
+        )}
         <div className="flex justify-between border-t border-border pt-2 text-base">
           <span className="font-semibold">Total perkiraan</span>
           <span className="font-extrabold text-primary">{rupiah(grandTotal)}</span>
