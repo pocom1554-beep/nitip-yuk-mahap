@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Store, Trash2 } from "lucide-react";
+import { Image as ImageIcon, Pencil, Plus, Store, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminGate } from "@/components/AdminGate";
+import { resolveBucketUrl, uploadLogo } from "@/lib/images";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +43,7 @@ type StoreRow = {
   address: string;
   open_hours: string;
   whatsapp: string;
+  logo_url: string;
 };
 
 const empty: StoreRow = {
@@ -51,6 +53,7 @@ const empty: StoreRow = {
   address: "",
   open_hours: "",
   whatsapp: "",
+  logo_url: "",
 };
 
 function KelolaToko() {
@@ -58,10 +61,34 @@ function KelolaToko() {
   const [form, setForm] = useState<StoreRow>({ ...empty });
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [logos, setLogos] = useState<Record<string, string>>({});
+  const [formLogo, setFormLogo] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     const { data } = await supabase.from("stores").select("*").order("name");
-    setRows((data ?? []) as unknown as StoreRow[]);
+    const list = (data ?? []) as unknown as StoreRow[];
+    setRows(list);
+    const entries = await Promise.all(
+      list
+        .filter((r) => r.logo_url)
+        .map(async (r) => [r.logo_url, await resolveBucketUrl("branding", r.logo_url)] as const),
+    );
+    setLogos(Object.fromEntries(entries.filter(([, v]) => v)) as Record<string, string>);
+  };
+
+  const pilihLogo = async (file: File) => {
+    setBusy(true);
+    try {
+      const path = await uploadLogo(file);
+      setForm((f) => ({ ...f, logo_url: path }));
+      setFormLogo(await resolveBucketUrl("branding", path));
+      toast.success("Logo toko terunggah, jangan lupa simpan");
+    } catch (e) {
+      toast.error("Gagal mengunggah logo", { description: (e as Error).message });
+    } finally {
+      setBusy(false);
+    }
   };
 
   useEffect(() => {
@@ -80,6 +107,7 @@ function KelolaToko() {
       address: form.address.trim(),
       open_hours: form.open_hours.trim(),
       whatsapp: form.whatsapp.trim(),
+      logo_url: form.logo_url || "",
     };
     const { error } = form.id
       ? await supabase.from("stores").update(payload).eq("id", form.id)
@@ -118,6 +146,7 @@ function KelolaToko() {
         <Button
           onClick={() => {
             setForm({ ...empty });
+            setFormLogo(null);
             setOpen(true);
           }}
         >
@@ -134,7 +163,16 @@ function KelolaToko() {
           {rows.map((s) => (
             <article key={s.id} className="surface-card p-4">
               <p className="flex items-center gap-2 text-base font-bold">
-                <Store className="h-4 w-4 text-primary" /> {s.name}
+                {s.logo_url && logos[s.logo_url] ? (
+                  <img
+                    src={logos[s.logo_url]}
+                    alt={`Logo ${s.name}`}
+                    className="h-9 w-9 rounded-xl border border-border object-cover"
+                  />
+                ) : (
+                  <Store className="h-4 w-4 text-primary" />
+                )}
+                {s.name}
               </p>
               {s.description && (
                 <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{s.description}</p>
@@ -148,6 +186,7 @@ function KelolaToko() {
                   variant="outline"
                   onClick={() => {
                     setForm(s);
+                    setFormLogo(s.logo_url ? logos[s.logo_url] ?? null : null);
                     setOpen(true);
                   }}
                 >
@@ -168,6 +207,29 @@ function KelolaToko() {
             <DialogTitle>{form.id ? "Ubah toko" : "Tambah toko"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-border bg-muted">
+                {formLogo ? (
+                  <img src={formLogo} alt="Logo toko" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} disabled={busy}>
+                <Upload className="h-4 w-4" /> Unggah logo toko
+              </Button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void pilihLogo(f);
+                  e.target.value = "";
+                }}
+              />
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="tn">Nama toko/mitra</Label>
               <Input

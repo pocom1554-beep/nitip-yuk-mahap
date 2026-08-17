@@ -1,21 +1,28 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBucketUrl } from "@/lib/images";
+import { sedangBuka } from "@/lib/format";
 
 export type SiteBranding = {
   site_name: string;
   tagline: string;
   site_description: string;
   logo_url: string;
+  open_time: string;
+  close_time: string;
+  is_open: boolean;
 };
 
-type State = SiteBranding & { logoSrc: string | null; refresh: () => Promise<void> };
+type State = SiteBranding & { logoSrc: string | null; bukaSekarang: boolean; refresh: () => Promise<void> };
 
 const DEFAULTS: SiteBranding = {
   site_name: "NitipYuk",
   tagline: "Mau apa aja, tinggal titip!",
   site_description: "Jasa titip online di Kecamatan Nanga Mahap.",
   logo_url: "",
+  open_time: "07:00",
+  close_time: "21:00",
+  is_open: true,
 };
 
 const Ctx = createContext<State | undefined>(undefined);
@@ -23,11 +30,12 @@ const Ctx = createContext<State | undefined>(undefined);
 export function SiteSettingsProvider({ children }: { children: ReactNode }) {
   const [branding, setBranding] = useState<SiteBranding>(DEFAULTS);
   const [logoSrc, setLogoSrc] = useState<string | null>(null);
+  const [now, setNow] = useState(() => new Date());
 
   const refresh = useCallback(async () => {
     const { data } = await supabase
       .from("settings")
-      .select("site_name, tagline, site_description, logo_url")
+      .select("site_name, tagline, site_description, logo_url, open_time, close_time, is_open")
       .eq("id", 1)
       .maybeSingle();
     if (!data) return;
@@ -36,6 +44,9 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
       tagline: data.tagline || DEFAULTS.tagline,
       site_description: data.site_description || DEFAULTS.site_description,
       logo_url: data.logo_url || "",
+      open_time: data.open_time || DEFAULTS.open_time,
+      close_time: data.close_time || DEFAULTS.close_time,
+      is_open: data.is_open ?? true,
     };
     setBranding(next);
     setLogoSrc(await resolveBucketUrl("branding", next.logo_url));
@@ -45,7 +56,15 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  return <Ctx.Provider value={{ ...branding, logoSrc, refresh }}>{children}</Ctx.Provider>;
+  // Perbarui status buka/tutup tiap menit.
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const bukaSekarang = sedangBuka(branding, now);
+
+  return <Ctx.Provider value={{ ...branding, logoSrc, bukaSekarang, refresh }}>{children}</Ctx.Provider>;
 }
 
 export function useSiteSettings(): State {

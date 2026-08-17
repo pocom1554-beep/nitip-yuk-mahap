@@ -33,6 +33,7 @@ type Row = {
   avg_minutes: number;
   avg_stars: number;
   rating_count: number;
+  job_title: string | null;
 };
 
 const MEDAL = ["bg-sunset", "bg-mint", "bg-hero"];
@@ -89,6 +90,9 @@ function PeringkatKurir() {
               </Avatar>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-base font-bold">{r.full_name || "Kurir NitipYuk"}</p>
+                {r.job_title && (
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">{r.job_title}</p>
+                )}
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Package className="h-3.5 w-3.5" /> {r.delivered} antaran
