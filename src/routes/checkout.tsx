@@ -2,11 +2,12 @@ import { notifyAdminsNewOrder } from "@/lib/push.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock } from "lucide-react";
 import { jarakDariPusat, mapsEmbed, mapsLink } from "@/lib/maps";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { hitungOngkir, rupiah, waLink } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,8 @@ type Settings = { base_fee: number; per_km_fee: number; free_km: number; admin_w
 type Promo = { code: string; kind: string; value: number; min_spend: number; max_discount: number };
 
 function Checkout() {
-  const { items, setQty, remove, total, clear } = useCart();
+  const { items, setQty, remove, total, clear, add } = useCart();
+  const { bukaSekarang, open_time, close_time } = useSiteSettings();
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -50,6 +52,23 @@ function Checkout() {
   const [locating, setLocating] = useState(false);
   const [kode, setKode] = useState("");
   const [promo, setPromo] = useState<Promo | null>(null);
+  const [extraName, setExtraName] = useState("");
+  const [extraPrice, setExtraPrice] = useState("");
+  const [extraQty, setExtraQty] = useState("1");
+
+  const tambahManual = () => {
+    const nama = extraName.trim();
+    if (!nama) {
+      toast.error("Tulis dulu nama barang yang mau dititip");
+      return;
+    }
+    const qty = Math.max(1, Number(extraQty) || 1);
+    add({ id: `manual-${crypto.randomUUID()}`, name: nama, price: Math.max(0, Number(extraPrice) || 0) }, qty);
+    setExtraName("");
+    setExtraPrice("");
+    setExtraQty("1");
+    toast.success(`${nama} ditambahkan ke keranjang`);
+  };
 
   const ambilLokasi = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -141,6 +160,12 @@ function Checkout() {
       toast.error("Keranjang kosong", { description: "Pilih barang atau tulis titipanmu di catatan." });
       return;
     }
+    if (!bukaSekarang) {
+      toast.error("Layanan sedang tutup", {
+        description: `Jam operasional NitipYuk ${open_time} - ${close_time} WIB.`,
+      });
+      return;
+    }
     if (!wa.trim() || !address.trim()) {
       toast.error("Nomor WhatsApp dan alamat wajib diisi");
       return;
@@ -199,7 +224,17 @@ function Checkout() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 pb-20">
-      <h1 className="text-2xl font-extrabold tracking-tight">Keranjang titipan</h1>
+      <h1 className="font-display text-3xl font-black tracking-tight">Keranjang titipan</h1>
+
+      {!bukaSekarang && (
+        <div className="mt-3 flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            Layanan sedang <strong>tutup</strong>. Jam operasional {open_time} - {close_time} WIB. Kamu tetap bisa menyiapkan
+            keranjang, pesanan dikirim saat layanan buka.
+          </span>
+        </div>
+      )}
 
       <section className="surface-card mt-4 divide-y divide-border">
         {items.length === 0 ? (
@@ -232,6 +267,35 @@ function Checkout() {
             </div>
           ))
         )}
+      </section>
+
+      <section className="surface-card mt-4 space-y-3 p-4">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <PackagePlus className="h-4 w-4 text-primary" /> Tambah pesanan lain
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          Barang tidak ada di katalog? Tambahkan sendiri di sini — bisa lebih dari satu barang.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-[1fr_130px_90px_auto]">
+          <Input
+            value={extraName}
+            onChange={(e) => setExtraName(e.target.value)}
+            maxLength={80}
+            placeholder="Nama barang, mis. Gula pasir 1 kg"
+          />
+          <Input
+            type="number"
+            min={0}
+            value={extraPrice}
+            onChange={(e) => setExtraPrice(e.target.value)}
+            placeholder="Perkiraan harga"
+          />
+          <Input type="number" min={1} value={extraQty} onChange={(e) => setExtraQty(e.target.value)} />
+          <Button type="button" variant="outline" onClick={tambahManual}>
+            <Plus className="h-4 w-4" /> Tambah
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">Kosongkan harga bila belum tahu — admin akan konfirmasi via WhatsApp.</p>
       </section>
 
       <section className="surface-card mt-4 space-y-3 p-4">
@@ -350,8 +414,14 @@ function Checkout() {
       </section>
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button className="flex-1" size="lg" onClick={() => void kirim()} disabled={busy || loading}>
-          {user ? (busy ? "Mengirim..." : "Kirim pesanan ke admin") : "Masuk untuk memesan"}
+        <Button className="flex-1" size="lg" onClick={() => void kirim()} disabled={busy || loading || !bukaSekarang}>
+          {!user
+            ? "Masuk untuk memesan"
+            : !bukaSekarang
+              ? `Tutup — buka ${open_time}`
+              : busy
+                ? "Mengirim..."
+                : "Kirim pesanan ke admin"}
         </Button>
         {settings.admin_whatsapp && (
           <Button asChild variant="outline" size="lg">
