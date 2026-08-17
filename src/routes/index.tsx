@@ -15,10 +15,12 @@ import {
   BadgePercent,
   Copy,
   Info,
+  Clock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveImageUrls } from "@/lib/images";
+import { resolveBucketUrl, resolveImageUrls } from "@/lib/images";
 import { rupiah, waLink } from "@/lib/format";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCart } from "@/hooks/useCart";
 import { StarRating } from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
@@ -83,7 +85,7 @@ type Promo = {
   expires_at: string | null;
 };
 
-type StoreInfo = { name: string; description: string; open_hours: string };
+type StoreInfo = { name: string; description: string; open_hours: string; logo_url: string };
 
 function parseOpsi(raw: unknown): Opsi[] {
   if (!Array.isArray(raw)) return [];
@@ -99,6 +101,7 @@ function Katalog() {
   const [sales, setSales] = useState<Record<string, number>>({});
   const [stores, setStores] = useState<{ store_name: string; orders_count: number; items_count: number }[]>([]);
   const [storeInfo, setStoreInfo] = useState<Record<string, StoreInfo>>({});
+  const [storeLogos, setStoreLogos] = useState<Record<string, string>>({});
   const [reviews, setReviews] = useState<Review[]>([]);
   const [promos, setPromos] = useState<Promo[]>([]);
   const [adminWa, setAdminWa] = useState("");
@@ -109,6 +112,7 @@ function Katalog() {
   const [detail, setDetail] = useState<Product | null>(null);
   const [pilihOpsi, setPilihOpsi] = useState(0);
   const { add } = useCart();
+  const { bukaSekarang, open_time, close_time } = useSiteSettings();
 
   useEffect(() => {
     const load = async () => {
@@ -131,7 +135,7 @@ function Katalog() {
           .select("id, code, title, description, kind, value, min_spend, expires_at")
           .eq("is_active", true)
           .order("created_at", { ascending: false }),
-        supabase.from("stores").select("name, description, open_hours"),
+        supabase.from("stores").select("name, description, open_hours, logo_url"),
       ]);
       const list = (prods ?? []) as unknown as Product[];
       setProducts(list);
@@ -142,9 +146,14 @@ function Katalog() {
       setPromos(((promoRows ?? []) as unknown as Promo[]).filter(
         (p) => !p.expires_at || new Date(p.expires_at).getTime() > Date.now(),
       ));
-      setStoreInfo(
-        Object.fromEntries(((storeRows ?? []) as unknown as StoreInfo[]).map((s) => [s.name, s])),
+      const infoList = (storeRows ?? []) as unknown as StoreInfo[];
+      setStoreInfo(Object.fromEntries(infoList.map((s) => [s.name, s])));
+      const logoEntries = await Promise.all(
+        infoList
+          .filter((s) => s.logo_url)
+          .map(async (s) => [s.name, await resolveBucketUrl("branding", s.logo_url)] as const),
       );
+      setStoreLogos(Object.fromEntries(logoEntries.filter(([, v]) => v)) as Record<string, string>);
       setImages(await resolveImageUrls(list.map((p) => p.image_url)));
       setLoading(false);
     };
@@ -269,9 +278,15 @@ function Katalog() {
       <section className="relative mt-4 overflow-hidden rounded-4xl bg-hero px-6 py-12 text-primary-foreground shadow-[var(--shadow-pop)]">
         <div className="absolute inset-0 bg-glow opacity-30" />
         <div className="relative">
-          <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
-            <Sparkles className="mr-1 h-3 w-3" /> Kecamatan Nanga Mahap
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
+              <Sparkles className="mr-1 h-3 w-3" /> Kecamatan Nanga Mahap
+            </Badge>
+            <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
+              <Clock className="mr-1 h-3 w-3" />
+              {bukaSekarang ? `Buka sampai ${close_time}` : `Tutup — buka ${open_time}`}
+            </Badge>
+          </div>
           <h1 className="font-display mt-4 text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
             Mau apa aja,
             <br />
@@ -314,6 +329,16 @@ function Katalog() {
           </div>
         </div>
       </section>
+
+      {!bukaSekarang && (
+        <div className="mt-4 flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive">
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            Layanan NitipYuk sedang tutup. Jam operasional {open_time} - {close_time} WIB. Silakan siapkan keranjangmu dulu,
+            pesanan bisa dikirim saat kami buka.
+          </span>
+        </div>
+      )}
 
       {promos.length > 0 && (
         <section className="mt-10">
@@ -384,13 +409,21 @@ function Katalog() {
                 params={{ name: encodeURIComponent(s.store_name) }}
                 className="surface-card card-hover flex gap-3 p-4 text-left"
               >
-                <span
-                  className={`font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg font-black text-primary-foreground ${
-                    i === 0 ? "bg-sunset" : i === 1 ? "bg-mint" : "bg-hero"
-                  }`}
-                >
-                  {i + 1}
-                </span>
+                {storeLogos[s.store_name] ? (
+                  <img
+                    src={storeLogos[s.store_name]}
+                    alt={`Logo ${s.store_name}`}
+                    className="h-11 w-11 shrink-0 rounded-2xl border border-border object-cover"
+                  />
+                ) : (
+                  <span
+                    className={`font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg font-black text-primary-foreground ${
+                      i === 0 ? "bg-sunset" : i === 1 ? "bg-mint" : "bg-hero"
+                    }`}
+                  >
+                    {i + 1}
+                  </span>
+                )}
                 <span className="min-w-0">
                   <span className="block truncate text-base font-bold">{s.store_name}</span>
                   <span className="block text-xs text-muted-foreground">
