@@ -16,6 +16,7 @@ type AuthState = {
   session: Session | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isKurir: boolean;
   isOwner: boolean;
   loading: boolean;
   refresh: () => Promise<void>;
@@ -28,12 +29,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isKurir, setIsKurir] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadDetails = async (uid: string | undefined) => {
     if (!uid) {
       setProfile(null);
       setIsAdmin(false);
+      setIsKurir(false);
       return;
     }
     const [{ data: prof }, { data: roles }] = await Promise.all([
@@ -42,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]);
     setProfile((prof as Profile) ?? null);
     setIsAdmin(!!roles?.some((r) => r.role === "admin"));
+    setIsKurir(!!roles?.some((r) => r.role === "kurir"));
   };
 
   useEffect(() => {
@@ -64,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     profile,
     isAdmin,
+    isKurir,
     isOwner: !!profile?.is_owner,
     loading,
     refresh: async () => loadDetails(session?.user?.id),
@@ -71,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       setProfile(null);
       setIsAdmin(false);
+      setIsKurir(false);
     },
   };
 
