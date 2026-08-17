@@ -341,9 +341,12 @@ export type Database = {
         Row: {
           admin_whatsapp: string
           base_fee: number
+          close_time: string
           free_km: number
           id: number
+          is_open: boolean
           logo_url: string
+          open_time: string
           per_km_fee: number
           site_description: string
           site_name: string
@@ -353,9 +356,12 @@ export type Database = {
         Insert: {
           admin_whatsapp?: string
           base_fee?: number
+          close_time?: string
           free_km?: number
           id?: number
+          is_open?: boolean
           logo_url?: string
+          open_time?: string
           per_km_fee?: number
           site_description?: string
           site_name?: string
@@ -365,9 +371,12 @@ export type Database = {
         Update: {
           admin_whatsapp?: string
           base_fee?: number
+          close_time?: string
           free_km?: number
           id?: number
+          is_open?: boolean
           logo_url?: string
+          open_time?: string
           per_km_fee?: number
           site_description?: string
           site_name?: string
@@ -383,6 +392,7 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          logo_url: string
           name: string
           open_hours: string
           updated_at: string
@@ -394,6 +404,7 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          logo_url?: string
           name: string
           open_hours?: string
           updated_at?: string
@@ -405,6 +416,7 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          logo_url?: string
           name?: string
           open_hours?: string
           updated_at?: string
@@ -447,6 +459,7 @@ export type Database = {
           courier_id: string
           delivered: number
           full_name: string
+          job_title: string
           rating_count: number
         }[]
       }
