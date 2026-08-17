@@ -37,7 +37,9 @@ export const STATUS_LABEL: Record<string, string> = {
 export type JamOperasional = { open_time: string; close_time: string; is_open: boolean };
 
 function keMenit(hhmm: string): number {
-  const [h, m] = (hhmm || "00:00").split(":").map((v) => Number(v) || 0);
+  const parts = (hhmm || "00:00").split(":");
+  const h = Number(parts[0]) || 0;
+  const m = Number(parts[1]) || 0;
   return h * 60 + m;
 }
 
