@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldOff, Upload, Image as ImageIcon } from "lucide-react";
+import { ShieldCheck, ShieldOff, Upload, Image as ImageIcon, Bike, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminGate } from "@/components/AdminGate";
 import { useAuth } from "@/hooks/useAuth";
 import { rupiah } from "@/lib/format";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/admin/pengaturan")({
   ),
 });
 
-type Row = { id: string; full_name: string; whatsapp: string; is_owner: boolean; isAdmin: boolean };
+type Row = { id: string; full_name: string; whatsapp: string; is_owner: boolean; isAdmin: boolean; isKurir: boolean };
 
 function Pengaturan() {
   const { isOwner, user, refresh } = useAuth();
@@ -47,6 +48,7 @@ function Pengaturan() {
       supabase.from("user_roles").select("user_id, role"),
     ]);
     const adminIds = new Set((roles ?? []).filter((r) => r.role === "admin").map((r) => r.user_id));
+    const kurirIds = new Set((roles ?? []).filter((r) => r.role === "kurir").map((r) => r.user_id));
     setRows(
       (profiles ?? []).map((p) => ({
         id: p.id,
@@ -54,6 +56,7 @@ function Pengaturan() {
         whatsapp: p.whatsapp,
         is_owner: p.is_owner,
         isAdmin: adminIds.has(p.id),
+        isKurir: kurirIds.has(p.id),
       })),
     );
   };
@@ -117,6 +120,26 @@ function Pengaturan() {
     if (row.id === user?.id) await refresh();
   };
 
+  const toggleKurir = async (row: Row) => {
+    if (row.isKurir) {
+      const { error } = await supabase.from("user_roles").delete().eq("user_id", row.id).eq("role", "kurir");
+      if (error) {
+        toast.error("Gagal mencabut kurir", { description: error.message });
+        return;
+      }
+      toast.success(`${row.full_name} bukan kurir lagi`);
+    } else {
+      const { error } = await supabase.from("user_roles").insert({ user_id: row.id, role: "kurir" });
+      if (error) {
+        toast.error("Gagal menunjuk kurir", { description: error.message });
+        return;
+      }
+      toast.success(`${row.full_name} kini kurir`);
+    }
+    await loadUsers();
+    if (row.id === user?.id) await refresh();
+  };
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 pb-16">
       <h1 className="text-2xl font-extrabold tracking-tight">Pengaturan</h1>
@@ -149,6 +172,8 @@ function Pengaturan() {
         </Button>
       </section>
 
+      {isOwner && <JamOperasionalSection />}
+
       {isOwner && <BrandingSection />}
 
       <section className="surface-card mt-4 p-4">
@@ -168,18 +193,24 @@ function Pengaturan() {
               <div className="flex items-center gap-2">
                 {r.is_owner && <Badge variant="secondary">Admin utama</Badge>}
                 {r.isAdmin && !r.is_owner && <Badge>Admin</Badge>}
+                {r.isKurir && <Badge variant="outline">Kurir</Badge>}
                 {isOwner && !r.is_owner && (
-                  <Button size="sm" variant={r.isAdmin ? "ghost" : "outline"} onClick={() => void toggleAdmin(r)}>
-                    {r.isAdmin ? (
-                      <>
-                        <ShieldOff className="h-3.5 w-3.5" /> Cabut
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="h-3.5 w-3.5" /> Jadikan admin
-                      </>
-                    )}
-                  </Button>
+                  <>
+                    <Button size="sm" variant={r.isAdmin ? "ghost" : "outline"} onClick={() => void toggleAdmin(r)}>
+                      {r.isAdmin ? (
+                        <>
+                          <ShieldOff className="h-3.5 w-3.5" /> Cabut admin
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="h-3.5 w-3.5" /> Jadikan admin
+                        </>
+                      )}
+                    </Button>
+                    <Button size="sm" variant={r.isKurir ? "ghost" : "outline"} onClick={() => void toggleKurir(r)}>
+                      <Bike className="h-3.5 w-3.5" /> {r.isKurir ? "Cabut kurir" : "Jadikan kurir"}
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -290,6 +321,74 @@ function BrandingSection() {
       </div>
       <Button onClick={() => void simpanBranding()} disabled={busy}>
         {busy ? "Menyimpan..." : "Simpan identitas situs"}
+      </Button>
+    </section>
+  );
+}
+
+function JamOperasionalSection() {
+  const { refresh: refreshSettings } = useSiteSettings();
+  const [openTime, setOpenTime] = useState("07:00");
+  const [closeTime, setCloseTime] = useState("21:00");
+  const [isOpen, setIsOpen] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    void supabase
+      .from("settings")
+      .select("open_time, close_time, is_open")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setOpenTime(data.open_time || "07:00");
+        setCloseTime(data.close_time || "21:00");
+        setIsOpen(data.is_open ?? true);
+      });
+  }, []);
+
+  const simpan = async () => {
+    setBusy(true);
+    const { error } = await supabase
+      .from("settings")
+      .update({ open_time: openTime, close_time: closeTime, is_open: isOpen })
+      .eq("id", 1);
+    setBusy(false);
+    if (error) {
+      toast.error("Gagal menyimpan jam operasional", { description: error.message });
+      return;
+    }
+    await refreshSettings();
+    toast.success("Jam operasional diperbarui");
+  };
+
+  return (
+    <section className="surface-card mt-4 space-y-3 p-4">
+      <h2 className="flex items-center gap-2 font-semibold">
+        <Clock className="h-4 w-4 text-primary" /> Jam operasional (admin utama)
+      </h2>
+      <p className="text-xs text-muted-foreground">
+        Di luar jam ini pelanggan akan melihat pemberitahuan bahwa layanan sedang tutup dan tidak bisa mengirim pesanan.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="ot">Jam buka</Label>
+          <Input id="ot" type="time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="ct2">Jam tutup</Label>
+          <Input id="ct2" type="time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex items-center justify-between rounded-xl border border-border p-3">
+        <div>
+          <p className="text-sm font-semibold">Layanan aktif</p>
+          <p className="text-xs text-muted-foreground">Matikan untuk menutup layanan sementara (libur/penuh).</p>
+        </div>
+        <Switch checked={isOpen} onCheckedChange={setIsOpen} />
+      </div>
+      <Button onClick={() => void simpan()} disabled={busy}>
+        {busy ? "Menyimpan..." : "Simpan jam operasional"}
       </Button>
     </section>
   );

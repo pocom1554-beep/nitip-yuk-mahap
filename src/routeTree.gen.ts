@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as DashboardKurirRouteImport } from './routes/dashboard-kurir'
 import { Route as KurirRouteImport } from './routes/kurir'
 import { Route as MasukanRouteImport } from './routes/masukan'
 import { Route as PesananRouteImport } from './routes/pesanan'
@@ -42,6 +43,11 @@ const AuthRoute = AuthRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardKurirRoute = DashboardKurirRouteImport.update({
+  id: '/dashboard-kurir',
+  path: '/dashboard-kurir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KurirRoute = KurirRouteImport.update({
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard-kurir': typeof DashboardKurirRoute
   '/kurir': typeof KurirRoute
   '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard-kurir': typeof DashboardKurirRoute
   '/kurir': typeof KurirRoute
   '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard-kurir': typeof DashboardKurirRoute
   '/kurir': typeof KurirRoute
   '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
+    | '/dashboard-kurir'
     | '/kurir'
     | '/masukan'
     | '/pesanan'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
+    | '/dashboard-kurir'
     | '/kurir'
     | '/masukan'
     | '/pesanan'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
+    | '/dashboard-kurir'
     | '/kurir'
     | '/masukan'
     | '/pesanan'
@@ -200,6 +212,7 @@ export interface RootRouteChildren {
   AkunRoute: typeof AkunRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
+  DashboardKurirRoute: typeof DashboardKurirRoute
   KurirRoute: typeof KurirRoute
   MasukanRoute: typeof MasukanRoute
   PesananRoute: typeof PesananRoute
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard-kurir': {
+      id: '/dashboard-kurir'
+      path: '/dashboard-kurir'
+      fullPath: '/dashboard-kurir'
+      preLoaderRoute: typeof DashboardKurirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kurir': {
@@ -320,6 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   AkunRoute: AkunRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
+  DashboardKurirRoute: DashboardKurirRoute,
   KurirRoute: KurirRoute,
   MasukanRoute: MasukanRoute,
   PesananRoute: PesananRoute,
