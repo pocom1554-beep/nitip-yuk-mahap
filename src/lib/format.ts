@@ -33,3 +33,24 @@ export const STATUS_LABEL: Record<string, string> = {
   selesai: "Selesai",
   batal: "Dibatalkan",
 };
+
+export type JamOperasional = { open_time: string; close_time: string; is_open: boolean };
+
+function keMenit(hhmm: string): number {
+  const [h, m] = (hhmm || "00:00").split(":").map((v) => Number(v) || 0);
+  return h * 60 + m;
+}
+
+/** Cek apakah layanan sedang buka berdasarkan sakelar & jam operasional. */
+export function sedangBuka(j: JamOperasional, now: Date = new Date()): boolean {
+  if (!j?.is_open) return false;
+  const open = keMenit(j.open_time || "00:00");
+  const close = keMenit(j.close_time || "23:59");
+  const cur = now.getHours() * 60 + now.getMinutes();
+  if (open === close) return true;
+  return open < close ? cur >= open && cur < close : cur >= open || cur < close;
+}
+
+export function jamOperasionalText(j: JamOperasional): string {
+  return `${j.open_time || "07:00"} - ${j.close_time || "21:00"} WIB`;
+}
