@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Clock, ImageIcon, MapPin, MessageCircle, Plus, Star, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveImageUrls } from "@/lib/images";
+import { resolveBucketUrl, resolveImageUrls } from "@/lib/images";
 import { rupiah, waLink } from "@/lib/format";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ type StoreRow = {
   address: string;
   open_hours: string;
   whatsapp: string;
+  logo_url: string;
 };
 
 type Opsi = { label: string; price: number };
@@ -62,17 +63,20 @@ function DetailToko() {
   const [products, setProducts] = useState<Product[]>([]);
   const [images, setImages] = useState<Record<string, string>>({});
   const [stats, setStats] = useState<{ orders_count: number; items_count: number } | null>(null);
+  const [logo, setLogo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { add } = useCart();
 
   useEffect(() => {
     const load = async () => {
       const [{ data: store }, { data: prods }, { data: allStats }] = await Promise.all([
-        supabase.from("stores").select("name, description, address, open_hours, whatsapp").eq("name", storeName).maybeSingle(),
+        supabase.from("stores").select("name, description, address, open_hours, whatsapp, logo_url").eq("name", storeName).maybeSingle(),
         supabase.from("products").select("*").eq("store_name", storeName).order("name"),
         supabase.rpc("store_stats"),
       ]);
-      setInfo((store as unknown as StoreRow) ?? null);
+      const st = (store as unknown as StoreRow) ?? null;
+      setInfo(st);
+      setLogo(st?.logo_url ? await resolveBucketUrl("branding", st.logo_url) : null);
       const list = (prods ?? []) as unknown as Product[];
       setProducts(list);
       setImages(await resolveImageUrls(list.map((p) => p.image_url)));
@@ -88,9 +92,18 @@ function DetailToko() {
       <section className="relative mt-4 overflow-hidden rounded-4xl bg-hero px-6 py-10 text-primary-foreground shadow-[var(--shadow-pop)]">
         <div className="absolute inset-0 bg-glow opacity-30" />
         <div className="relative">
-          <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
-            <Store className="mr-1 h-3 w-3" /> Toko mitra
-          </Badge>
+          <div className="flex items-center gap-3">
+            {logo && (
+              <img
+                src={logo}
+                alt={`Logo ${storeName}`}
+                className="h-16 w-16 rounded-2xl border border-primary-foreground/30 bg-background object-cover"
+              />
+            )}
+            <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
+              <Store className="mr-1 h-3 w-3" /> Toko mitra
+            </Badge>
+          </div>
           <h1 className="font-display mt-3 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
             {storeName}
           </h1>
