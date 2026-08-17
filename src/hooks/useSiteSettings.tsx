@@ -30,7 +30,7 @@ const Ctx = createContext<State | undefined>(undefined);
 export function SiteSettingsProvider({ children }: { children: ReactNode }) {
   const [branding, setBranding] = useState<SiteBranding>(DEFAULTS);
   const [logoSrc, setLogoSrc] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
+  const [now, setNow] = useState(() => new Date());
 
   const refresh = useCallback(async () => {
     const { data } = await supabase
@@ -58,11 +58,11 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
 
   // Perbarui status buka/tutup tiap menit.
   useEffect(() => {
-    const t = setInterval(() => setTick((v) => v + 1), 60_000);
+    const t = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(t);
   }, []);
 
-  const bukaSekarang = sedangBuka(branding, new Date(tick ? Date.now() : Date.now()));
+  const bukaSekarang = sedangBuka(branding, now);
 
   return <Ctx.Provider value={{ ...branding, logoSrc, bukaSekarang, refresh }}>{children}</Ctx.Provider>;
 }
