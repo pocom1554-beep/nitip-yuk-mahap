@@ -284,29 +284,51 @@ function Checkout() {
           <PackagePlus className="h-4 w-4 text-primary" /> Tambah pesanan lain
         </h2>
         <p className="text-xs text-muted-foreground">
-          Barang tidak ada di katalog? Tambahkan sendiri di sini — bisa lebih dari satu barang.
+          Pilih langsung barang lain dari katalog tanpa harus keluar dari keranjang.
         </p>
-        <div className="grid gap-2 sm:grid-cols-[1fr_130px_90px_auto]">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={extraName}
-            onChange={(e) => setExtraName(e.target.value)}
-            maxLength={80}
-            placeholder="Nama barang, mis. Gula pasir 1 kg"
+            value={cariItem}
+            onChange={(e) => setCariItem(e.target.value)}
+            placeholder="Cari barang atau toko di katalog..."
+            className="pl-9"
           />
-          <Input
-            type="number"
-            min={0}
-            value={extraPrice}
-            onChange={(e) => setExtraPrice(e.target.value)}
-            placeholder="Perkiraan harga"
-          />
-          <Input type="number" min={1} value={extraQty} onChange={(e) => setExtraQty(e.target.value)} />
-          <Button type="button" variant="outline" onClick={tambahManual}>
-            <Plus className="h-4 w-4" /> Tambah
-          </Button>
         </div>
-        <p className="text-xs text-muted-foreground">Kosongkan harga bila belum tahu — admin akan konfirmasi via WhatsApp.</p>
+        {katalogTampil.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Barang tidak ditemukan di katalog.</p>
+        ) : (
+          <ul className="divide-y divide-border rounded-xl border border-border">
+            {katalogTampil.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 p-2.5">
+                <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-muted">
+                  {p.image_url && katalogImg[p.image_url] ? (
+                    <img src={katalogImg[p.image_url]} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                      <PackagePlus className="h-4 w-4" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{p.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {rupiah(Number(p.price))}
+                    {p.store_name ? ` · ${p.store_name}` : ""}
+                  </p>
+                </div>
+                <Button type="button" size="sm" variant="outline" onClick={() => tambahDariKatalog(p)}>
+                  <Plus className="h-4 w-4" /> Tambah
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Barang tidak ada di katalog? Tulis saja di kolom catatan — admin akan konfirmasi lewat WhatsApp.
+        </p>
       </section>
+
 
       <section className="surface-card mt-4 space-y-3 p-4">
         <h2 className="font-semibold">Data pengantaran</h2>
