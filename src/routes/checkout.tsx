@@ -52,23 +52,23 @@ function Checkout() {
   const [locating, setLocating] = useState(false);
   const [kode, setKode] = useState("");
   const [promo, setPromo] = useState<Promo | null>(null);
-  const [extraName, setExtraName] = useState("");
-  const [extraPrice, setExtraPrice] = useState("");
-  const [extraQty, setExtraQty] = useState("1");
+  const [katalog, setKatalog] = useState<KatalogItem[]>([]);
+  const [cariItem, setCariItem] = useState("");
 
-  const tambahManual = () => {
-    const nama = extraName.trim();
-    if (!nama) {
-      toast.error("Tulis dulu nama barang yang mau dititip");
-      return;
-    }
-    const qty = Math.max(1, Number(extraQty) || 1);
-    add({ id: `manual-${crypto.randomUUID()}`, name: nama, price: Math.max(0, Number(extraPrice) || 0) }, qty);
-    setExtraName("");
-    setExtraPrice("");
-    setExtraQty("1");
-    toast.success(`${nama} ditambahkan ke keranjang`);
+  const katalogTampil = katalog
+    .filter(
+      (p) =>
+        p.is_available &&
+        (p.name.toLowerCase().includes(cariItem.toLowerCase()) ||
+          (p.store_name ?? "").toLowerCase().includes(cariItem.toLowerCase())),
+    )
+    .slice(0, 8);
+
+  const tambahDariKatalog = (p: KatalogItem) => {
+    add({ id: p.id, name: p.name, price: Number(p.price) || 0, image: p.image_url });
+    toast.success(`${p.name} ditambahkan ke keranjang`);
   };
+
 
   const ambilLokasi = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
