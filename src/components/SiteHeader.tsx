@@ -142,13 +142,6 @@ export function SiteHeader() {
                         <ShieldCheck className="mr-2 h-4 w-4" /> Dasbor admin
                       </Link>
                     </DropdownMenuItem>
-                    {isOwner && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/dashboard-kurir">
-                          <Bike className="mr-2 h-4 w-4" /> Intip dashboard kurir
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuItem asChild>
                       <Link to="/admin/katalog">Kelola katalog</Link>
                     </DropdownMenuItem>
