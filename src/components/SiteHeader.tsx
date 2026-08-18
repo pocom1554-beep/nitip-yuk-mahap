@@ -94,8 +94,8 @@ export function SiteHeader() {
                 {kurirOnly ? (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link to="/dashboard-kurir">
-                        <Bike className="mr-2 h-4 w-4" /> Dashboard kurir
+                      <Link to="/akun">
+                        <UserRound className="mr-2 h-4 w-4" /> Dashboard akun
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -110,6 +110,7 @@ export function SiteHeader() {
                     </DropdownMenuItem>
                   </>
                 ) : (
+
                   <>
                     <DropdownMenuItem asChild>
                       <Link to="/akun">

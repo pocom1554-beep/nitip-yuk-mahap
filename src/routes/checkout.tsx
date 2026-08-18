@@ -66,6 +66,8 @@ function Checkout() {
   const [promo, setPromo] = useState<Promo | null>(null);
   const [katalog, setKatalog] = useState<KatalogItem[]>([]);
   const [cariItem, setCariItem] = useState("");
+  const [katalogImg, setKatalogImg] = useState<Record<string, string>>({});
+
 
   const katalogTampil = katalog
     .filter(
@@ -115,6 +117,19 @@ function Checkout() {
       .then(({ data }) => {
         if (data) setSettings(data as unknown as Settings);
       });
+  }, []);
+
+  useEffect(() => {
+    const loadKatalog = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, store_name, price, image_url, is_available")
+        .order("name");
+      const list = (data ?? []) as unknown as KatalogItem[];
+      setKatalog(list);
+      setKatalogImg(await resolveImageUrls(list.map((p) => p.image_url)));
+    };
+    void loadKatalog();
   }, []);
 
   useEffect(() => {
