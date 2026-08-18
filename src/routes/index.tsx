@@ -395,14 +395,19 @@ function Katalog() {
 
       {stores.length > 0 && (
         <section className="mt-10">
-          <h2 className="section-title flex items-center gap-2">
-            <Store className="h-6 w-6 text-primary" /> Toko paling laris
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="section-title flex items-center gap-2">
+              <Store className="h-6 w-6 text-primary" /> Toko mitra
+            </h2>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/toko">Lihat toko paling laris</Link>
+            </Button>
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ketuk kartu toko untuk melihat profil lengkap dan semua barangnya.
+            Ketuk kartu toko untuk melihat profil lengkap, ulasan konsumen, dan semua barangnya.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {stores.slice(0, 6).map((s, i) => (
+            {stores.slice(0, 3).map((s, i) => (
               <Link
                 key={s.store_name}
                 to="/toko/$name"
@@ -441,25 +446,6 @@ function Katalog() {
         </section>
       )}
 
-      {reviews.length > 0 && (
-        <section className="mt-10">
-          <h2 className="section-title flex items-center gap-2">
-            <Quote className="h-6 w-6 text-primary" /> Kata konsumen
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {reviews.slice(0, 6).map((r) => (
-              <article key={r.id} className="surface-card p-4">
-                <StarRating value={r.stars} size="sm" />
-                <p className="mt-2 text-sm leading-relaxed">"{r.comment}"</p>
-                <p className="mt-2 text-xs font-semibold text-muted-foreground">
-                  {r.display_name || "Konsumen"}
-                  {r.store_name && ` · ${r.store_name}`}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="mt-12">
         <h2 className="section-title">Katalog lengkap</h2>
