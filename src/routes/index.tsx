@@ -9,7 +9,7 @@ import {
   Store,
   Flame,
   Trophy,
-  Quote,
+  
   MessageSquareHeart,
   Sparkles,
   BadgePercent,
@@ -22,7 +22,7 @@ import { resolveBucketUrl, resolveImageUrls } from "@/lib/images";
 import { rupiah, waLink } from "@/lib/format";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCart } from "@/hooks/useCart";
-import { StarRating } from "@/components/StarRating";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -65,14 +65,6 @@ type Product = {
   is_available: boolean;
 };
 
-type Review = {
-  id: string;
-  display_name: string;
-  store_name: string;
-  stars: number;
-  comment: string;
-  created_at: string;
-};
 
 type Promo = {
   id: string;
@@ -102,7 +94,7 @@ function Katalog() {
   const [stores, setStores] = useState<{ store_name: string; orders_count: number; items_count: number }[]>([]);
   const [storeInfo, setStoreInfo] = useState<Record<string, StoreInfo>>({});
   const [storeLogos, setStoreLogos] = useState<Record<string, string>>({});
-  const [reviews, setReviews] = useState<Review[]>([]);
+  
   const [promos, setPromos] = useState<Promo[]>([]);
   const [adminWa, setAdminWa] = useState("");
   const [q, setQ] = useState("");
@@ -121,7 +113,7 @@ function Katalog() {
         { data: setting },
         { data: sale },
         { data: stats },
-        { data: revs },
+        
         { data: promoRows },
         { data: storeRows },
       ] = await Promise.all([
@@ -129,7 +121,7 @@ function Katalog() {
         supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
         supabase.rpc("product_sales"),
         supabase.rpc("store_stats"),
-        supabase.rpc("public_reviews", { _limit: 8 }),
+        
         supabase
           .from("promos")
           .select("id, code, title, description, kind, value, min_spend, expires_at")
@@ -142,7 +134,7 @@ function Katalog() {
       setAdminWa(setting?.admin_whatsapp ?? "");
       setSales(Object.fromEntries((sale ?? []).map((s) => [s.product_id, Number(s.qty)])));
       setStores((stats ?? []) as { store_name: string; orders_count: number; items_count: number }[]);
-      setReviews(((revs ?? []) as unknown as Review[]).filter((r) => r.comment));
+      
       setPromos(((promoRows ?? []) as unknown as Promo[]).filter(
         (p) => !p.expires_at || new Date(p.expires_at).getTime() > Date.now(),
       ));
