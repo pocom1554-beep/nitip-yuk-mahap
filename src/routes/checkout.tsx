@@ -30,6 +30,16 @@ type Settings = { base_fee: number; per_km_fee: number; free_km: number; admin_w
 
 type Promo = { code: string; kind: string; value: number; min_spend: number; max_discount: number };
 
+type KatalogItem = {
+  id: string;
+  name: string;
+  store_name: string;
+  price: number;
+  image_url: string | null;
+  is_available: boolean;
+};
+
+
 function Checkout() {
   const { items, setQty, remove, total, clear, add } = useCart();
   const { bukaSekarang, open_time, close_time } = useSiteSettings();
