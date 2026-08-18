@@ -2,8 +2,10 @@ import { notifyAdminsNewOrder } from "@/lib/push.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock, Search } from "lucide-react";
 import { jarakDariPusat, mapsEmbed, mapsLink } from "@/lib/maps";
+import { resolveImageUrls } from "@/lib/images";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
