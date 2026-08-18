@@ -11,7 +11,7 @@ import {
   Store,
   BadgePercent,
   Users,
-  Bike,
+  
   Clock,
 } from "lucide-react";
 import wordmark from "@/assets/nitipyuk-wordmark.png.asset.json";
