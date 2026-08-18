@@ -38,16 +38,30 @@ type Row = {
 
 const MEDAL = ["bg-sunset", "bg-mint", "bg-hero"];
 
+type Review = {
+  id: string;
+  display_name: string;
+  store_name: string;
+  stars: number;
+  comment: string;
+  created_at: string;
+};
+
 function PeringkatKurir() {
   const [rows, setRows] = useState<Row[]>([]);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.rpc("courier_ranking");
+      const [{ data }, { data: revs }] = await Promise.all([
+        supabase.rpc("courier_ranking"),
+        supabase.rpc("public_reviews", { _limit: 8 }),
+      ]);
       const list = (data ?? []) as unknown as Row[];
       setRows(list);
+      setReviews(((revs ?? []) as unknown as Review[]).filter((r) => r.comment));
       const entries = await Promise.all(
         list
           .filter((r) => r.avatar_url)
@@ -58,6 +72,7 @@ function PeringkatKurir() {
     };
     void load();
   }, []);
+
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 pb-20">
