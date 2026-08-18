@@ -128,6 +128,12 @@ export function SiteHeader() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link to="/toko">
+                        <Store className="mr-2 h-4 w-4" /> Toko paling laris
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+
                       <Link to="/masukan">
                         <MessageSquareHeart className="mr-2 h-4 w-4" /> Kritik, saran & request
                       </Link>
