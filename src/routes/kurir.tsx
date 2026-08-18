@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trophy, Timer, Package, Medal } from "lucide-react";
+import { Trophy, Timer, Package, Medal, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBucketUrl } from "@/lib/images";
 import { StarRating } from "@/components/StarRating";
@@ -38,16 +38,30 @@ type Row = {
 
 const MEDAL = ["bg-sunset", "bg-mint", "bg-hero"];
 
+type Review = {
+  id: string;
+  display_name: string;
+  store_name: string;
+  stars: number;
+  comment: string;
+  created_at: string;
+};
+
 function PeringkatKurir() {
   const [rows, setRows] = useState<Row[]>([]);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.rpc("courier_ranking");
+      const [{ data }, { data: revs }] = await Promise.all([
+        supabase.rpc("courier_ranking"),
+        supabase.rpc("public_reviews", { _limit: 8 }),
+      ]);
       const list = (data ?? []) as unknown as Row[];
       setRows(list);
+      setReviews(((revs ?? []) as unknown as Review[]).filter((r) => r.comment));
       const entries = await Promise.all(
         list
           .filter((r) => r.avatar_url)
@@ -58,6 +72,7 @@ function PeringkatKurir() {
     };
     void load();
   }, []);
+
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 pb-20">
@@ -114,6 +129,28 @@ function PeringkatKurir() {
           ))}
         </div>
       )}
+
+      {reviews.length > 0 && (
+        <section className="mt-10">
+          <h2 className="section-title flex items-center gap-2">
+            <Quote className="h-6 w-6 text-primary" /> Kata konsumen
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">Ulasan terbaru untuk kurir dan toko mitra NitipYuk.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {reviews.slice(0, 6).map((r) => (
+              <article key={r.id} className="surface-card p-4">
+                <StarRating value={r.stars} size="sm" />
+                <p className="mt-2 text-sm leading-relaxed">"{r.comment}"</p>
+                <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                  {r.display_name || "Konsumen"}
+                  {r.store_name && ` · ${r.store_name}`}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
     </main>
   );
 }

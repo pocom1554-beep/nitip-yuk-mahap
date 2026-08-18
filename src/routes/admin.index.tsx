@@ -82,11 +82,35 @@ function AdminDashboard() {
     const channel = supabase
       .channel("admin-orders")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => void load())
+      // Pop-up realtime khusus pesanan baru masuk.
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+        const o = payload.new as unknown as Order;
+        const daftar = (Array.isArray(o.items) ? o.items : [])
+          .map((i) => `${i.name} x${i.qty}`)
+          .join(", ");
+        try {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.frequency.value = 880;
+          gain.gain.value = 0.08;
+          osc.connect(gain).connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } catch {
+          /* audio opsional */
+        }
+        toast.success(`Pesanan baru dari ${o.customer_name || "Pelanggan"}`, {
+          description: `${daftar || "Titipan sesuai catatan"} • ${rupiah(Number(o.total))}`,
+          duration: 12000,
+        });
+      })
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
   }, []);
+
 
   /** Klaim pesanan secara atomik: hanya berhasil kalau belum diambil admin lain. */
   const ambilPesanan = async (id: string) => {

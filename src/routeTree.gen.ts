@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as DashboardKurirRouteImport } from './routes/dashboard-kurir'
 import { Route as KurirRouteImport } from './routes/kurir'
 import { Route as MasukanRouteImport } from './routes/masukan'
 import { Route as PesananRouteImport } from './routes/pesanan'
@@ -23,6 +22,7 @@ import { Route as AdminPengaturanRouteImport } from './routes/admin.pengaturan'
 import { Route as AdminPromoRouteImport } from './routes/admin.promo'
 import { Route as AdminTimRouteImport } from './routes/admin.tim'
 import { Route as AdminTokoRouteImport } from './routes/admin.toko'
+import { Route as TokoIndexRouteImport } from './routes/toko.index'
 import { Route as TokoNameRouteImport } from './routes/toko.$name'
 
 const IndexRoute = IndexRouteImport.update({
@@ -43,11 +43,6 @@ const AuthRoute = AuthRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardKurirRoute = DashboardKurirRouteImport.update({
-  id: '/dashboard-kurir',
-  path: '/dashboard-kurir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KurirRoute = KurirRouteImport.update({
@@ -95,6 +90,11 @@ const AdminTokoRoute = AdminTokoRouteImport.update({
   path: '/admin/toko',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TokoIndexRoute = TokoIndexRouteImport.update({
+  id: '/toko/',
+  path: '/toko/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TokoNameRoute = TokoNameRouteImport.update({
   id: '/toko/$name',
   path: '/toko/$name',
@@ -106,7 +106,6 @@ export interface FileRoutesByFullPath {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
-  '/dashboard-kurir': typeof DashboardKurirRoute
   '/kurir': typeof KurirRoute
   '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
@@ -117,13 +116,13 @@ export interface FileRoutesByFullPath {
   '/admin/toko': typeof AdminTokoRoute
   '/toko/$name': typeof TokoNameRoute
   '/admin/': typeof AdminIndexRoute
+  '/toko/': typeof TokoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
-  '/dashboard-kurir': typeof DashboardKurirRoute
   '/kurir': typeof KurirRoute
   '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
@@ -134,6 +133,7 @@ export interface FileRoutesByTo {
   '/admin/toko': typeof AdminTokoRoute
   '/toko/$name': typeof TokoNameRoute
   '/admin': typeof AdminIndexRoute
+  '/toko': typeof TokoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,7 +141,6 @@ export interface FileRoutesById {
   '/akun': typeof AkunRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
-  '/dashboard-kurir': typeof DashboardKurirRoute
   '/kurir': typeof KurirRoute
   '/masukan': typeof MasukanRoute
   '/pesanan': typeof PesananRoute
@@ -152,6 +151,7 @@ export interface FileRoutesById {
   '/admin/toko': typeof AdminTokoRoute
   '/toko/$name': typeof TokoNameRoute
   '/admin/': typeof AdminIndexRoute
+  '/toko/': typeof TokoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,7 +160,6 @@ export interface FileRouteTypes {
     | '/akun'
     | '/auth'
     | '/checkout'
-    | '/dashboard-kurir'
     | '/kurir'
     | '/masukan'
     | '/pesanan'
@@ -171,13 +170,13 @@ export interface FileRouteTypes {
     | '/admin/toko'
     | '/toko/$name'
     | '/admin/'
+    | '/toko/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/akun'
     | '/auth'
     | '/checkout'
-    | '/dashboard-kurir'
     | '/kurir'
     | '/masukan'
     | '/pesanan'
@@ -188,13 +187,13 @@ export interface FileRouteTypes {
     | '/admin/toko'
     | '/toko/$name'
     | '/admin'
+    | '/toko'
   id:
     | '__root__'
     | '/'
     | '/akun'
     | '/auth'
     | '/checkout'
-    | '/dashboard-kurir'
     | '/kurir'
     | '/masukan'
     | '/pesanan'
@@ -205,6 +204,7 @@ export interface FileRouteTypes {
     | '/admin/toko'
     | '/toko/$name'
     | '/admin/'
+    | '/toko/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,7 +212,6 @@ export interface RootRouteChildren {
   AkunRoute: typeof AkunRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
-  DashboardKurirRoute: typeof DashboardKurirRoute
   KurirRoute: typeof KurirRoute
   MasukanRoute: typeof MasukanRoute
   PesananRoute: typeof PesananRoute
@@ -223,6 +222,7 @@ export interface RootRouteChildren {
   AdminTokoRoute: typeof AdminTokoRoute
   TokoNameRoute: typeof TokoNameRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  TokoIndexRoute: typeof TokoIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -253,13 +253,6 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard-kurir': {
-      id: '/dashboard-kurir'
-      path: '/dashboard-kurir'
-      fullPath: '/dashboard-kurir'
-      preLoaderRoute: typeof DashboardKurirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kurir': {
@@ -325,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTokoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/toko/': {
+      id: '/toko/'
+      path: '/toko'
+      fullPath: '/toko/'
+      preLoaderRoute: typeof TokoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/toko/$name': {
       id: '/toko/$name'
       path: '/toko/$name'
@@ -340,7 +340,6 @@ const rootRouteChildren: RootRouteChildren = {
   AkunRoute: AkunRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
-  DashboardKurirRoute: DashboardKurirRoute,
   KurirRoute: KurirRoute,
   MasukanRoute: MasukanRoute,
   PesananRoute: PesananRoute,
@@ -351,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTokoRoute: AdminTokoRoute,
   TokoNameRoute: TokoNameRoute,
   AdminIndexRoute: AdminIndexRoute,
+  TokoIndexRoute: TokoIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

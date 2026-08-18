@@ -11,7 +11,7 @@ import {
   Store,
   BadgePercent,
   Users,
-  Bike,
+  
   Clock,
 } from "lucide-react";
 import wordmark from "@/assets/nitipyuk-wordmark.png.asset.json";
@@ -94,8 +94,8 @@ export function SiteHeader() {
                 {kurirOnly ? (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link to="/dashboard-kurir">
-                        <Bike className="mr-2 h-4 w-4" /> Dashboard kurir
+                      <Link to="/akun">
+                        <UserRound className="mr-2 h-4 w-4" /> Dashboard akun
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -110,6 +110,7 @@ export function SiteHeader() {
                     </DropdownMenuItem>
                   </>
                 ) : (
+
                   <>
                     <DropdownMenuItem asChild>
                       <Link to="/akun">
@@ -127,6 +128,12 @@ export function SiteHeader() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link to="/toko">
+                        <Store className="mr-2 h-4 w-4" /> Toko paling laris
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+
                       <Link to="/masukan">
                         <MessageSquareHeart className="mr-2 h-4 w-4" /> Kritik, saran & request
                       </Link>
@@ -141,13 +148,6 @@ export function SiteHeader() {
                         <ShieldCheck className="mr-2 h-4 w-4" /> Dasbor admin
                       </Link>
                     </DropdownMenuItem>
-                    {isOwner && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/dashboard-kurir">
-                          <Bike className="mr-2 h-4 w-4" /> Intip dashboard kurir
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuItem asChild>
                       <Link to="/admin/katalog">Kelola katalog</Link>
                     </DropdownMenuItem>

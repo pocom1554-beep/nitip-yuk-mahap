@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Clock, ImageIcon, MapPin, MessageCircle, Plus, Star, Store } from "lucide-react";
+import { Clock, ImageIcon, MapPin, MessageCircle, Plus, Quote, Star, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBucketUrl, resolveImageUrls } from "@/lib/images";
 import { rupiah, waLink } from "@/lib/format";
 import { useCart } from "@/hooks/useCart";
+import { StarRating } from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
 
 export const Route = createFileRoute("/toko/$name")({
   head: ({ params }) => ({
@@ -46,7 +48,17 @@ type StoreRow = {
   logo_url: string;
 };
 
+type Review = {
+  id: string;
+  display_name: string;
+  store_name: string;
+  stars: number;
+  comment: string;
+  created_at: string;
+};
+
 type Opsi = { label: string; price: number };
+
 
 export function parseOpsi(raw: unknown): Opsi[] {
   if (!Array.isArray(raw)) return [];
@@ -64,15 +76,17 @@ function DetailToko() {
   const [images, setImages] = useState<Record<string, string>>({});
   const [stats, setStats] = useState<{ orders_count: number; items_count: number } | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const { add } = useCart();
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: store }, { data: prods }, { data: allStats }] = await Promise.all([
+      const [{ data: store }, { data: prods }, { data: allStats }, { data: revs }] = await Promise.all([
         supabase.from("stores").select("name, description, address, open_hours, whatsapp, logo_url").eq("name", storeName).maybeSingle(),
         supabase.from("products").select("*").eq("store_name", storeName).order("name"),
         supabase.rpc("store_stats"),
+        supabase.rpc("public_reviews", { _limit: 24 }),
       ]);
       const st = (store as unknown as StoreRow) ?? null;
       setInfo(st);
@@ -82,10 +96,14 @@ function DetailToko() {
       setImages(await resolveImageUrls(list.map((p) => p.image_url)));
       const s = (allStats ?? []).find((x) => x.store_name === storeName);
       setStats(s ? { orders_count: Number(s.orders_count), items_count: Number(s.items_count) } : null);
+      setReviews(
+        ((revs ?? []) as unknown as Review[]).filter((r) => r.comment && r.store_name === storeName).slice(0, 6),
+      );
       setLoading(false);
     };
     void load();
   }, [storeName]);
+
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-20">
@@ -206,6 +224,28 @@ function DetailToko() {
           </div>
         )}
       </section>
+
+      <section className="mt-10">
+        <h2 className="section-title flex items-center gap-2">
+          <Quote className="h-6 w-6 text-primary" /> Kata konsumen
+        </h2>
+        {reviews.length === 0 ? (
+          <p className="surface-card mt-4 p-6 text-center text-sm text-muted-foreground">
+            Belum ada ulasan konsumen untuk toko ini.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {reviews.map((r) => (
+              <article key={r.id} className="surface-card p-4">
+                <StarRating value={r.stars} size="sm" />
+                <p className="mt-2 text-sm leading-relaxed">"{r.comment}"</p>
+                <p className="mt-2 text-xs font-semibold text-muted-foreground">{r.display_name || "Konsumen"}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
+
   );
 }
