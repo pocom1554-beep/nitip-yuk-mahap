@@ -232,12 +232,21 @@ function Katalog() {
             <Link
               to="/toko/$name"
               params={{ name: encodeURIComponent(p.store_name) }}
-              className="flex items-center gap-1 truncate text-xs font-semibold text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1.5 truncate text-xs font-semibold text-muted-foreground hover:text-primary"
             >
-              <Store className="h-3.5 w-3.5 shrink-0" />
+              {storeLogos[p.store_name] ? (
+                <img
+                  src={storeLogos[p.store_name]}
+                  alt={`Logo ${p.store_name}`}
+                  className="h-5 w-5 shrink-0 rounded-full border border-border object-cover"
+                />
+              ) : (
+                <Store className="h-3.5 w-3.5 shrink-0" />
+              )}
               {p.store_name}
             </Link>
           )}
+
           {p.description && (
             <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{p.description}</p>
           )}
