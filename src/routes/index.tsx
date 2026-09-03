@@ -513,7 +513,18 @@ function Katalog() {
 
         {store !== "Semua toko" && storeInfo[store] && (
           <div className="surface-card mt-4 p-4">
-            <p className="text-base font-bold">{store}</p>
+            <p className="flex items-center gap-2 text-base font-bold">
+              {storeLogos[store] ? (
+                <img
+                  src={storeLogos[store]}
+                  alt={`Logo ${store}`}
+                  className="h-9 w-9 rounded-xl border border-border object-cover"
+                />
+              ) : (
+                <Store className="h-4 w-4 text-primary" />
+              )}
+              {store}
+            </p>
             {storeInfo[store]?.description && (
               <p className="mt-1 text-sm text-muted-foreground">{storeInfo[store]?.description}</p>
             )}
