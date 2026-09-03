@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBucketUrl, resolveImageUrls } from "@/lib/images";
+import { categoryIcon } from "@/lib/category-icons";
 import { rupiah, waLink } from "@/lib/format";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCart } from "@/hooks/useCart";
