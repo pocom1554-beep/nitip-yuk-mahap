@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBucketUrl, resolveImageUrls } from "@/lib/images";
+import { categoryIcon } from "@/lib/category-icons";
 import { rupiah, waLink } from "@/lib/format";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCart } from "@/hooks/useCart";
@@ -232,12 +233,21 @@ function Katalog() {
             <Link
               to="/toko/$name"
               params={{ name: encodeURIComponent(p.store_name) }}
-              className="flex items-center gap-1 truncate text-xs font-semibold text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1.5 truncate text-xs font-semibold text-muted-foreground hover:text-primary"
             >
-              <Store className="h-3.5 w-3.5 shrink-0" />
+              {storeLogos[p.store_name] ? (
+                <img
+                  src={storeLogos[p.store_name]}
+                  alt={`Logo ${p.store_name}`}
+                  className="h-5 w-5 shrink-0 rounded-full border border-border object-cover"
+                />
+              ) : (
+                <Store className="h-3.5 w-3.5 shrink-0" />
+              )}
               {p.store_name}
             </Link>
           )}
+
           {p.description && (
             <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{p.description}</p>
           )}
@@ -452,19 +462,23 @@ function Katalog() {
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                cat === c
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+          {categories.map((c) => {
+            const Icon = categoryIcon(c);
+            return (
+              <button
+                key={c}
+                onClick={() => setCat(c)}
+                className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                  cat === c
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                {c}
+              </button>
+            );
+          })}
         </div>
 
         {storeNames.length > 1 && (
@@ -473,22 +487,44 @@ function Katalog() {
               <button
                 key={s}
                 onClick={() => setStore(s)}
-                className={`flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                className={`flex items-center gap-1.5 rounded-full border py-1.5 pl-1.5 pr-3.5 text-xs font-bold transition-colors ${
                   store === s
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border bg-card text-muted-foreground hover:bg-accent"
                 }`}
               >
-                <Store className="h-3.5 w-3.5" />
+                {storeLogos[s] ? (
+                  <img
+                    src={storeLogos[s]}
+                    alt={`Logo ${s}`}
+                    className="h-6 w-6 rounded-full border border-border object-cover"
+                  />
+                ) : (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
+                    <Store className="h-3.5 w-3.5" />
+                  </span>
+                )}
                 {s}
               </button>
             ))}
           </div>
         )}
 
+
         {store !== "Semua toko" && storeInfo[store] && (
           <div className="surface-card mt-4 p-4">
-            <p className="text-base font-bold">{store}</p>
+            <p className="flex items-center gap-2 text-base font-bold">
+              {storeLogos[store] ? (
+                <img
+                  src={storeLogos[store]}
+                  alt={`Logo ${store}`}
+                  className="h-9 w-9 rounded-xl border border-border object-cover"
+                />
+              ) : (
+                <Store className="h-4 w-4 text-primary" />
+              )}
+              {store}
+            </p>
             {storeInfo[store]?.description && (
               <p className="mt-1 text-sm text-muted-foreground">{storeInfo[store]?.description}</p>
             )}
