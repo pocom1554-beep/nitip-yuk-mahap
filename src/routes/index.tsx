@@ -109,6 +109,7 @@ function Katalog() {
   const [pilihOpsi, setPilihOpsi] = useState(0);
   const { add } = useCart();
   const { bukaSekarang, open_time, close_time } = useSiteSettings();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const load = async () => {
