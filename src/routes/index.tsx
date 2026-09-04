@@ -295,8 +295,7 @@ function Katalog() {
             tinggal titip!
           </h1>
           <p className="mt-4 max-w-md text-base leading-relaxed text-primary-foreground/90">
-            Sembako, makanan, obat, sampai barang toko — kami belikan dan antar ke rumahmu. Ongkos
-            titip menyesuaikan jarak.
+            Jasa titip makanan, minuman, hingga camilan impianmu. Tinggal duduk manis, hantaran favorit siap meluncur ke tempatmu! Ongkir sesuai jarak.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             <Button asChild variant="secondary" size="lg" className="font-bold">
