@@ -92,7 +92,7 @@ function Katalog() {
   const [products, setProducts] = useState<Product[]>([]);
   const [images, setImages] = useState<Record<string, string>>({});
   const [sales, setSales] = useState<Record<string, number>>({});
-  const [stores, setStores] = useState<{ store_name: string; orders_count: number; items_count: number }[]>([]);
+  
   const [storeInfo, setStoreInfo] = useState<Record<string, StoreInfo>>({});
   const [storeLogos, setStoreLogos] = useState<Record<string, string>>({});
   
