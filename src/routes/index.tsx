@@ -92,7 +92,7 @@ function Katalog() {
   const [products, setProducts] = useState<Product[]>([]);
   const [images, setImages] = useState<Record<string, string>>({});
   const [sales, setSales] = useState<Record<string, number>>({});
-  const [stores, setStores] = useState<{ store_name: string; orders_count: number; items_count: number }[]>([]);
+  
   const [storeInfo, setStoreInfo] = useState<Record<string, StoreInfo>>({});
   const [storeLogos, setStoreLogos] = useState<Record<string, string>>({});
   
@@ -113,16 +113,12 @@ function Katalog() {
         { data: prods },
         { data: setting },
         { data: sale },
-        { data: stats },
-        
         { data: promoRows },
         { data: storeRows },
       ] = await Promise.all([
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
         supabase.rpc("product_sales"),
-        supabase.rpc("store_stats"),
-        
         supabase
           .from("promos")
           .select("id, code, title, description, kind, value, min_spend, expires_at")
@@ -134,7 +130,6 @@ function Katalog() {
       setProducts(list);
       setAdminWa(setting?.admin_whatsapp ?? "");
       setSales(Object.fromEntries((sale ?? []).map((s) => [s.product_id, Number(s.qty)])));
-      setStores((stats ?? []) as { store_name: string; orders_count: number; items_count: number }[]);
       
       setPromos(((promoRows ?? []) as unknown as Promo[]).filter(
         (p) => !p.expires_at || new Date(p.expires_at).getTime() > Date.now(),
@@ -393,60 +388,6 @@ function Katalog() {
           </div>
         </section>
       )}
-
-      {stores.length > 0 && (
-        <section className="mt-10">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="section-title flex items-center gap-2">
-              <Store className="h-6 w-6 text-primary" /> Toko mitra
-            </h2>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/toko">Lihat toko paling laris</Link>
-            </Button>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ketuk kartu toko untuk melihat profil lengkap, ulasan konsumen, dan semua barangnya.
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {stores.slice(0, 3).map((s, i) => (
-              <Link
-                key={s.store_name}
-                to="/toko/$name"
-                params={{ name: encodeURIComponent(s.store_name) }}
-                className="surface-card card-hover flex gap-3 p-4 text-left"
-              >
-                {storeLogos[s.store_name] ? (
-                  <img
-                    src={storeLogos[s.store_name]}
-                    alt={`Logo ${s.store_name}`}
-                    className="h-11 w-11 shrink-0 rounded-2xl border border-border object-cover"
-                  />
-                ) : (
-                  <span
-                    className={`font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg font-black text-primary-foreground ${
-                      i === 0 ? "bg-sunset" : i === 1 ? "bg-mint" : "bg-hero"
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-                )}
-                <span className="min-w-0">
-                  <span className="block truncate text-base font-bold">{s.store_name}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {s.orders_count} pesanan · {s.items_count} barang terjual
-                  </span>
-                  {storeInfo[s.store_name]?.description && (
-                    <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
-                      {storeInfo[s.store_name]?.description}
-                    </span>
-                  )}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
 
       <section className="mt-12">
         <h2 className="section-title">Katalog lengkap</h2>
