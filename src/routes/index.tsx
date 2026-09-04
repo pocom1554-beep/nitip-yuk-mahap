@@ -23,6 +23,9 @@ import { categoryIcon } from "@/lib/category-icons";
 import { rupiah, waLink } from "@/lib/format";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import { BannerCarousel } from "@/components/BannerCarousel";
+import { BannerAdminPanel } from "@/components/BannerAdminPanel";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
