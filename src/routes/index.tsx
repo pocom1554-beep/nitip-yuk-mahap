@@ -23,6 +23,9 @@ import { categoryIcon } from "@/lib/category-icons";
 import { rupiah, waLink } from "@/lib/format";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import { BannerCarousel } from "@/components/BannerCarousel";
+import { BannerAdminPanel } from "@/components/BannerAdminPanel";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,6 +109,7 @@ function Katalog() {
   const [pilihOpsi, setPilihOpsi] = useState(0);
   const { add } = useCart();
   const { bukaSekarang, open_time, close_time } = useSiteSettings();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const load = async () => {
@@ -272,6 +276,9 @@ function Katalog() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-20">
+      <BannerCarousel />
+      {isAdmin && <BannerAdminPanel />}
+
       <section className="relative mt-4 overflow-hidden rounded-4xl bg-hero px-6 py-12 text-primary-foreground shadow-[var(--shadow-pop)]">
         <div className="absolute inset-0 bg-glow opacity-30" />
         <div className="relative">
