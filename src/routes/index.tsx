@@ -276,6 +276,9 @@ function Katalog() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-20">
+      <BannerCarousel />
+      {isAdmin && <BannerAdminPanel />}
+
       <section className="relative mt-4 overflow-hidden rounded-4xl bg-hero px-6 py-12 text-primary-foreground shadow-[var(--shadow-pop)]">
         <div className="absolute inset-0 bg-glow opacity-30" />
         <div className="relative">
