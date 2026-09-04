@@ -113,16 +113,12 @@ function Katalog() {
         { data: prods },
         { data: setting },
         { data: sale },
-        { data: stats },
-        
         { data: promoRows },
         { data: storeRows },
       ] = await Promise.all([
         supabase.from("products").select("*").order("created_at", { ascending: false }),
         supabase.from("settings").select("admin_whatsapp").eq("id", 1).maybeSingle(),
         supabase.rpc("product_sales"),
-        supabase.rpc("store_stats"),
-        
         supabase
           .from("promos")
           .select("id, code, title, description, kind, value, min_spend, expires_at")
@@ -134,7 +130,6 @@ function Katalog() {
       setProducts(list);
       setAdminWa(setting?.admin_whatsapp ?? "");
       setSales(Object.fromEntries((sale ?? []).map((s) => [s.product_id, Number(s.qty)])));
-      setStores((stats ?? []) as { store_name: string; orders_count: number; items_count: number }[]);
       
       setPromos(((promoRows ?? []) as unknown as Promo[]).filter(
         (p) => !p.expires_at || new Date(p.expires_at).getTime() > Date.now(),
