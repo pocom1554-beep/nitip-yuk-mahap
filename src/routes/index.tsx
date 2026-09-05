@@ -516,12 +516,12 @@ function Katalog() {
       </section>
 
       <Dialog open={!!detail} onOpenChange={(v) => !v && setDetail(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           {detail && (
             <>
-              <DialogHeader>
-                <DialogTitle className="font-display text-2xl font-black">{detail.name}</DialogTitle>
-                <DialogDescription>
+              <DialogHeader className="gap-1">
+                <DialogTitle className="font-display text-lg font-black sm:text-xl">{detail.name}</DialogTitle>
+                <DialogDescription className="text-xs">
                   {detail.category}
                   {detail.store_name && ` · ${detail.store_name}`}
                 </DialogDescription>
@@ -530,52 +530,53 @@ function Katalog() {
                 <img
                   src={images[detail.image_url]}
                   alt={detail.name}
-                  className="aspect-video w-full rounded-2xl object-cover"
+                  className="aspect-video w-full rounded-xl object-cover"
                 />
               )}
-              {detail.description && <p className="text-sm leading-relaxed">{detail.description}</p>}
+              {detail.description && <p className="text-xs leading-relaxed sm:text-sm">{detail.description}</p>}
               {detail.detail && (
-                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                <p className="whitespace-pre-line text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   {detail.detail}
                 </p>
               )}
 
               {detailOpsi.length > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-sm font-bold">Pilih opsi harga</p>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-bold">Pilih opsi harga</p>
                   {detailOpsi.map((o, i) => (
                     <button
                       key={o.label}
                       type="button"
                       onClick={() => setPilihOpsi(i)}
-                      className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                      className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left transition-colors ${
                         pilihOpsi === i ? "border-primary bg-primary/10" : "border-border bg-card"
                       }`}
                     >
-                      <span className="text-sm font-semibold">{o.label}</span>
-                      <span className="font-display font-extrabold text-primary">{rupiah(o.price)}</span>
+                      <span className="text-xs font-semibold sm:text-sm">{o.label}</span>
+                      <span className="font-display text-sm font-extrabold text-primary">{rupiah(o.price)}</span>
                     </button>
                   ))}
                 </div>
               ) : (
-                <p className="font-display text-2xl font-black text-primary">{rupiah(detail.price)}</p>
+                <p className="font-display text-lg font-black text-primary sm:text-xl">{rupiah(detail.price)}</p>
               )}
 
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className="flex-1 font-bold"
+                  size="sm"
+                  className="flex-1 text-xs font-bold"
                   disabled={!detail.is_available}
                   onClick={() => {
                     tambah(detail, detailOpsi[pilihOpsi]);
                     setDetail(null);
                   }}
                 >
-                  <Plus className="h-4 w-4" /> {detail.is_available ? "Masukkan keranjang" : "Kosong"}
+                  <Plus className="h-3.5 w-3.5" /> {detail.is_available ? "Masukkan keranjang" : "Kosong"}
                 </Button>
                 {detail.store_name && (
-                  <Button asChild variant="outline">
+                  <Button asChild size="sm" variant="outline" className="text-xs">
                     <Link to="/toko/$name" params={{ name: encodeURIComponent(detail.store_name) }}>
-                      <Store className="h-4 w-4" /> Profil toko
+                      <Store className="h-3.5 w-3.5" /> Profil toko
                     </Link>
                   </Button>
                 )}
