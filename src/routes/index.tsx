@@ -465,23 +465,23 @@ function Katalog() {
 
 
         {store !== "Semua toko" && storeInfo[store] && (
-          <div className="surface-card mt-4 p-4">
-            <p className="flex items-center gap-2 text-base font-bold">
+          <div className="surface-card mt-3 p-3">
+            <p className="flex items-center gap-2 text-sm font-bold">
               {storeLogos[store] ? (
                 <img
                   src={storeLogos[store]}
                   alt={`Logo ${store}`}
-                  className="h-9 w-9 rounded-xl border border-border object-cover"
+                  className="h-7 w-7 rounded-lg border border-border object-cover"
                 />
               ) : (
-                <Store className="h-4 w-4 text-primary" />
+                <Store className="h-3.5 w-3.5 text-primary" />
               )}
-              {store}
+              <span className="truncate">{store}</span>
             </p>
             {storeInfo[store]?.description && (
-              <p className="mt-1 text-sm text-muted-foreground">{storeInfo[store]?.description}</p>
+              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{storeInfo[store]?.description}</p>
             )}
-            <Button asChild size="sm" variant="outline" className="mt-3">
+            <Button asChild size="sm" variant="outline" className="mt-2 h-7 text-xs">
               <Link to="/toko/$name" params={{ name: encodeURIComponent(store) }}>
                 Lihat profil toko
               </Link>
@@ -490,26 +490,26 @@ function Katalog() {
         )}
 
         {loading ? (
-          <p className="mt-10 text-center text-sm text-muted-foreground">Memuat katalog...</p>
+          <p className="mt-8 text-center text-xs text-muted-foreground">Memuat katalog...</p>
         ) : filtered.length === 0 ? (
-          <div className="surface-pop mt-6 p-8 text-center">
-            <p className="text-lg font-bold">Barang tidak ditemukan</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="surface-pop mt-5 p-6 text-center">
+            <p className="text-sm font-bold">Barang tidak ditemukan</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               Kamu tetap bisa menitip barang bebas lewat halaman keranjang, atau request barang baru.
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <Button asChild>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              <Button asChild size="sm" className="text-xs">
                 <Link to="/checkout">Titip barang bebas</Link>
               </Button>
-              <Button asChild variant="outline">
+              <Button asChild size="sm" variant="outline" className="text-xs">
                 <Link to="/masukan">
-                  <MessageSquareHeart className="h-4 w-4" /> Request barang
+                  <MessageSquareHeart className="h-3.5 w-3.5" /> Request barang
                 </Link>
               </Button>
             </div>
           </div>
         ) : (
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {filtered.map(card)}
           </div>
         )}
