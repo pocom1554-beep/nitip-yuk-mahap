@@ -254,16 +254,16 @@ function Katalog() {
             {opsi.length ? `Mulai ${rupiah(mulai)}` : rupiah(p.price)}
           </p>
           <div className="mt-1 flex gap-1">
-            <Button size="sm" variant="outline" className="h-8 px-2" onClick={() => bukaDetail(p)}>
-              <Info className="h-3.5 w-3.5" />
+            <Button size="sm" variant="outline" className="h-7 px-1.5" onClick={() => bukaDetail(p)}>
+              <Info className="h-3 w-3" />
             </Button>
             <Button
               size="sm"
-              className="h-8 flex-1 text-xs font-bold"
+              className="h-7 flex-1 text-[10px] font-bold"
               disabled={!p.is_available}
               onClick={() => (opsi.length ? bukaDetail(p) : tambah(p))}
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               {p.is_available ? (opsi.length ? "Pilih" : "Titip") : "Kosong"}
             </Button>
           </div>
