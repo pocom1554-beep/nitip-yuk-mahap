@@ -275,7 +275,7 @@ function Katalog() {
   const detailOpsi = detail ? parseOpsi(detail.price_options) : [];
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-20">
+    <main className="mx-auto max-w-5xl px-3 pb-16 sm:px-4 sm:pb-20">
       <BannerCarousel />
       {isAdmin && <BannerAdminPanel />}
 
