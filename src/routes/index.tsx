@@ -253,17 +253,17 @@ function Katalog() {
           <p className="font-display mt-auto pt-1 text-sm font-extrabold text-primary sm:text-base">
             {opsi.length ? `Mulai ${rupiah(mulai)}` : rupiah(p.price)}
           </p>
-          <div className="mt-1 flex gap-1">
-            <Button size="sm" variant="outline" className="h-7 px-1.5" onClick={() => bukaDetail(p)}>
-              <Info className="h-3 w-3" />
+          <div className="mt-1 flex gap-0.5">
+            <Button size="sm" variant="outline" className="h-6 w-6 p-0" onClick={() => bukaDetail(p)}>
+              <Info className="h-2.5 w-2.5" />
             </Button>
             <Button
               size="sm"
-              className="h-7 flex-1 text-[10px] font-bold"
+              className="h-6 flex-1 text-[9px] font-bold"
               disabled={!p.is_available}
               onClick={() => (opsi.length ? bukaDetail(p) : tambah(p))}
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-2.5 w-2.5" />
               {p.is_available ? (opsi.length ? "Pilih" : "Titip") : "Kosong"}
             </Button>
           </div>
