@@ -344,25 +344,25 @@ function Katalog() {
       )}
 
       {promos.length > 0 && (
-        <section className="mt-10">
-          <h2 className="section-title flex items-center gap-2">
-            <BadgePercent className="h-6 w-6 text-primary" /> Promo & voucher
+        <section className="mt-8">
+          <h2 className="section-title flex items-center gap-1.5">
+            <BadgePercent className="h-5 w-5 text-primary" /> Promo & voucher
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             Salin kodenya, lalu tempel di halaman keranjang saat checkout.
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {promos.map((p) => (
               <article
                 key={p.id}
-                className="surface-pop card-hover relative overflow-hidden bg-sunset p-4 text-primary-foreground"
+                className="surface-pop card-hover relative overflow-hidden bg-sunset p-3 text-primary-foreground"
               >
-                <p className="text-xs font-bold uppercase tracking-widest opacity-80">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">
                   {p.kind === "persen" ? `Diskon ${p.value}%` : `Potongan ${rupiah(p.value)}`}
                 </p>
-                <p className="font-display mt-1 text-xl font-black leading-tight">{p.title || p.code}</p>
-                {p.description && <p className="mt-1 text-xs opacity-90">{p.description}</p>}
-                <p className="mt-2 text-[11px] opacity-90">
+                <p className="font-display mt-0.5 text-base font-black leading-tight">{p.title || p.code}</p>
+                {p.description && <p className="mt-0.5 text-[10px] opacity-90">{p.description}</p>}
+                <p className="mt-1.5 text-[10px] opacity-90">
                   Min. belanja {rupiah(p.min_spend)}
                   {p.expires_at && ` · s/d ${new Date(p.expires_at).toLocaleDateString("id-ID")}`}
                 </p>
@@ -372,9 +372,9 @@ function Katalog() {
                     void navigator.clipboard?.writeText(p.code);
                     toast.success(`Kode ${p.code} disalin`);
                   }}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary-foreground/60 bg-primary-foreground/10 px-3 py-2 text-sm font-black tracking-wider"
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-primary-foreground/60 bg-primary-foreground/10 px-2 py-1.5 text-xs font-black tracking-wider"
                 >
-                  <Copy className="h-3.5 w-3.5" /> {p.code}
+                  <Copy className="h-3 w-3" /> {p.code}
                 </button>
               </article>
             ))}
@@ -383,45 +383,48 @@ function Katalog() {
       )}
 
       {bestSellers.length > 0 && (
-        <section className="mt-10">
-          <h2 className="section-title flex items-center gap-2">
-            <Flame className="h-6 w-6 text-warning" /> Paling sering dititip
+        <section className="mt-8">
+          <h2 className="section-title flex items-center gap-1.5">
+            <Flame className="h-5 w-5 text-warning" /> Paling sering dititip
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             Barang favorit warga Nanga Mahap minggu ini.
           </p>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {bestSellers.map(card)}
           </div>
         </section>
       )}
 
-      <section className="mt-12">
+      <section className="mt-10">
         <h2 className="section-title">Katalog lengkap</h2>
-        <div className="relative mt-4">
+        <div className="relative mt-3">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Cari barang..."
-            className="h-12 rounded-2xl pl-9 text-base"
+            className="h-10 rounded-2xl pl-9 text-sm"
           />
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {categories.map((c) => {
             const Icon = categoryIcon(c);
+            const active = cat === c;
             return (
               <button
                 key={c}
                 onClick={() => setCat(c)}
-                className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                  cat === c
-                    ? "border-primary bg-primary text-primary-foreground"
+                className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all ${
+                  active
+                    ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-soft)]"
                     : "border-border bg-card text-muted-foreground hover:bg-accent"
                 }`}
               >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full ${active ? "bg-primary-foreground/20" : "bg-muted"}`}>
+                  <Icon className="h-3 w-3 shrink-0" />
+                </span>
                 {c}
               </button>
             );
@@ -429,31 +432,34 @@ function Katalog() {
         </div>
 
         {storeNames.length > 1 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {storeNames.map((s) => (
-              <button
-                key={s}
-                onClick={() => setStore(s)}
-                className={`flex items-center gap-1.5 rounded-full border py-1.5 pl-1.5 pr-3.5 text-xs font-bold transition-colors ${
-                  store === s
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                {storeLogos[s] ? (
-                  <img
-                    src={storeLogos[s]}
-                    alt={`Logo ${s}`}
-                    className="h-6 w-6 rounded-full border border-border object-cover"
-                  />
-                ) : (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
-                    <Store className="h-3.5 w-3.5" />
-                  </span>
-                )}
-                {s}
-              </button>
-            ))}
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {storeNames.map((s) => {
+              const active = store === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setStore(s)}
+                  className={`flex items-center gap-1 rounded-full border py-1 pl-1 pr-2.5 text-[10px] font-bold transition-all ${
+                    active
+                      ? "border-primary bg-primary/10 text-primary shadow-[var(--shadow-soft)]"
+                      : "border-border bg-card text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {storeLogos[s] ? (
+                    <img
+                      src={storeLogos[s]}
+                      alt={`Logo ${s}`}
+                      className="h-5 w-5 shrink-0 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-muted">
+                      <Store className="h-3 w-3" />
+                    </span>
+                  )}
+                  <span className="truncate max-w-[80px]">{s}</span>
+                </button>
+              );
+            })}
           </div>
         )}
 
