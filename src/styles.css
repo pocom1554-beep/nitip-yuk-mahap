@@ -219,9 +219,3 @@
   font-size: 1.25rem;
   line-height: 1.2;
 }
-
-@media (min-width: 640px) {
-  @utility section-title {
-    font-size: 1.5rem;
-  }
-}
