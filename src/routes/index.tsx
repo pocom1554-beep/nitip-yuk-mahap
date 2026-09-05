@@ -201,69 +201,69 @@ function Katalog() {
     const mulai = opsi.length ? Math.min(...opsi.map((o) => o.price)) : Number(p.price);
     return (
       <article key={p.id} className="surface-pop card-hover flex flex-col overflow-hidden">
-        <button type="button" onClick={() => bukaDetail(p)} className="relative aspect-square bg-muted text-left">
+        <button type="button" onClick={() => bukaDetail(p)} className="relative aspect-[4/3] bg-muted text-left">
           {p.image_url && images[p.image_url] ? (
             <img src={images[p.image_url]} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center text-muted-foreground">
-              <ImageIcon className="h-8 w-8" />
+              <ImageIcon className="h-6 w-6" />
             </div>
           )}
           {bestSellerIds.has(p.id) && (
-            <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-sunset px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-[var(--shadow-soft)]">
-              <Flame className="h-3 w-3" /> Best seller
+            <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-sunset px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-[var(--shadow-soft)]">
+              <Flame className="h-2.5 w-2.5" /> Best
             </span>
           )}
           {opsi.length > 0 && (
-            <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2 py-1 text-[10px] font-bold text-primary">
-              {opsi.length} pilihan harga
+            <span className="absolute bottom-1.5 left-1.5 rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+              {opsi.length} opsi
             </span>
           )}
           {!p.is_available && (
-            <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
+            <span className="absolute right-1.5 top-1.5 rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground">
               Kosong
             </span>
           )}
         </button>
-        <div className="flex flex-1 flex-col gap-1.5 p-3.5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{p.category}</p>
-          <h3 className="font-display line-clamp-2 text-base font-extrabold leading-snug">{p.name}</h3>
+        <div className="flex flex-1 flex-col gap-1 p-2.5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-primary">{p.category}</p>
+          <h3 className="font-display line-clamp-2 text-xs font-extrabold leading-snug sm:text-sm">{p.name}</h3>
           {p.store_name && (
             <Link
               to="/toko/$name"
               params={{ name: encodeURIComponent(p.store_name) }}
-              className="flex items-center gap-1.5 truncate text-xs font-semibold text-muted-foreground hover:text-primary"
+              className="flex items-center gap-1 truncate text-[10px] font-semibold text-muted-foreground hover:text-primary"
             >
               {storeLogos[p.store_name] ? (
                 <img
                   src={storeLogos[p.store_name]}
                   alt={`Logo ${p.store_name}`}
-                  className="h-5 w-5 shrink-0 rounded-full border border-border object-cover"
+                  className="h-4 w-4 shrink-0 rounded-full border border-border object-cover"
                 />
               ) : (
-                <Store className="h-3.5 w-3.5 shrink-0" />
+                <Store className="h-3 w-3 shrink-0" />
               )}
-              {p.store_name}
+              <span className="truncate">{p.store_name}</span>
             </Link>
           )}
 
           {p.description && (
-            <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{p.description}</p>
+            <p className="line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">{p.description}</p>
           )}
-          <p className="font-display mt-auto pt-1 text-lg font-extrabold text-primary">
+          <p className="font-display mt-auto pt-1 text-sm font-extrabold text-primary sm:text-base">
             {opsi.length ? `Mulai ${rupiah(mulai)}` : rupiah(p.price)}
           </p>
-          <div className="mt-1 flex gap-1.5">
-            <Button size="sm" variant="outline" className="px-2.5" onClick={() => bukaDetail(p)}>
-              <Info className="h-4 w-4" />
+          <div className="mt-1 flex gap-1">
+            <Button size="sm" variant="outline" className="h-8 px-2" onClick={() => bukaDetail(p)}>
+              <Info className="h-3.5 w-3.5" />
             </Button>
             <Button
               size="sm"
-              className="flex-1 font-bold"
+              className="h-8 flex-1 text-xs font-bold"
               disabled={!p.is_available}
               onClick={() => (opsi.length ? bukaDetail(p) : tambah(p))}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               {p.is_available ? (opsi.length ? "Pilih" : "Titip") : "Kosong"}
             </Button>
           </div>
