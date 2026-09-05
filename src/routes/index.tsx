@@ -279,53 +279,53 @@ function Katalog() {
       <BannerCarousel />
       {isAdmin && <BannerAdminPanel />}
 
-      <section className="relative mt-4 overflow-hidden rounded-4xl bg-hero px-6 py-12 text-primary-foreground shadow-[var(--shadow-pop)]">
+      <section className="relative mt-3 overflow-hidden rounded-3xl bg-hero px-5 py-8 text-primary-foreground shadow-[var(--shadow-soft)] sm:rounded-4xl sm:px-6 sm:py-10">
         <div className="absolute inset-0 bg-glow opacity-30" />
         <div className="relative">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
-              <Sparkles className="mr-1 h-3 w-3" /> Kecamatan Nanga Mahap
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge className="bg-primary-foreground/15 px-2 py-0.5 text-[10px] text-primary-foreground hover:bg-primary-foreground/20">
+              <Sparkles className="mr-1 h-2.5 w-2.5" /> Nanga Mahap
             </Badge>
-            <Badge className="bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/20">
-              <Clock className="mr-1 h-3 w-3" />
+            <Badge className="bg-primary-foreground/15 px-2 py-0.5 text-[10px] text-primary-foreground hover:bg-primary-foreground/20">
+              <Clock className="mr-1 h-2.5 w-2.5" />
               {bukaSekarang ? `Buka sampai ${close_time}` : `Tutup — buka ${open_time}`}
             </Badge>
           </div>
-          <h1 className="font-display mt-4 text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
+          <h1 className="font-display mt-3 text-2xl font-black leading-[1.05] tracking-tight sm:text-4xl">
             Mau apa aja,
             <br />
             tinggal titip!
           </h1>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-primary-foreground/90">
+          <p className="mt-2 max-w-md text-xs leading-relaxed text-primary-foreground/90 sm:text-sm">
             Jasa titip makanan, minuman, hingga camilan impianmu. Tinggal duduk manis, hantaran favorit siap meluncur ke tempatmu! Ongkir sesuai jarak.
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Button asChild variant="secondary" size="lg" className="font-bold">
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            <Button asChild variant="secondary" size="sm" className="text-xs font-bold">
               <Link to="/checkout">Mulai titip</Link>
             </Button>
             <Button
               asChild
-              size="lg"
+              size="sm"
               variant="outline"
-              className="border-primary-foreground/40 bg-transparent font-bold text-primary-foreground hover:bg-primary-foreground/10"
+              className="border-primary-foreground/40 bg-transparent text-xs font-bold text-primary-foreground hover:bg-primary-foreground/10"
             >
               <Link to="/kurir">
-                <Trophy className="h-4 w-4" /> Peringkat kurir
+                <Trophy className="h-3.5 w-3.5" /> Kurir
               </Link>
             </Button>
             {adminWa && (
               <Button
                 asChild
-                size="lg"
+                size="sm"
                 variant="outline"
-                className="border-primary-foreground/40 bg-transparent font-bold text-primary-foreground hover:bg-primary-foreground/10"
+                className="border-primary-foreground/40 bg-transparent text-xs font-bold text-primary-foreground hover:bg-primary-foreground/10"
               >
                 <a
                   href={waLink(adminWa, "Halo admin NitipYuk, saya mau tanya-tanya dulu.")}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <MessageCircle className="h-4 w-4" /> Hubungi admin
+                  <MessageCircle className="h-3.5 w-3.5" /> Admin
                 </a>
               </Button>
             )}
@@ -334,8 +334,8 @@ function Katalog() {
       </section>
 
       {!bukaSekarang && (
-        <div className="mt-4 flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive">
-          <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="mt-3 flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs font-medium text-destructive">
+          <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             Layanan NitipYuk sedang tutup. Jam operasional {open_time} - {close_time} WIB. Silakan siapkan keranjangmu dulu,
             pesanan bisa dikirim saat kami buka.
