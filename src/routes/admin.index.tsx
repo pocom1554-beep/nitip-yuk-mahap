@@ -1,12 +1,13 @@
 import { useAuth } from "@/hooks/useAuth";
 import { PushToggle } from "@/components/PushToggle";
 import { notifyCustomerOrderUpdate } from "@/lib/push.functions";
-import { Lock, LockOpen } from "lucide-react";
+import { ImageIcon, Lock, LockOpen, Store, Tags } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MessageCircle, MapPin, Navigation } from "lucide-react";
 import { mapsDirections, mapsEmbed, mapsLink } from "@/lib/maps";
+import { resolveImageUrls } from "@/lib/images";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminGate } from "@/components/AdminGate";
 import { rupiah, waLink, STATUS_LABEL } from "@/lib/format";
@@ -36,7 +37,16 @@ export const Route = createFileRoute("/admin/")({
   ),
 });
 
-type OrderItem = { name: string; price: number; qty: number };
+type OrderItem = {
+  product_id?: string;
+  name: string;
+  price: number;
+  qty: number;
+  image_url?: string | null;
+  store_name?: string;
+  variant_label?: string;
+};
+type ProductInfo = { id: string; name: string; store_name: string; image_url: string | null; price_options: unknown };
 type Order = {
   id: string;
   customer_name: string;
@@ -65,11 +75,19 @@ function AdminDashboard() {
   const [filter, setFilter] = useState("semua");
   const [names, setNames] = useState<Record<string, string>>({});
   const [claiming, setClaiming] = useState<string | null>(null);
+  const [products, setProducts] = useState<ProductInfo[]>([]);
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
 
   const load = async () => {
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+    const [{ data }, { data: productRows }] = await Promise.all([
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("products").select("id, name, store_name, image_url, price_options"),
+    ]);
     const list = (data ?? []) as unknown as Order[];
+    const productList = (productRows ?? []) as unknown as ProductInfo[];
     setOrders(list);
+    setProducts(productList);
+    setProductImages(await resolveImageUrls(productList.map((product) => product.image_url)));
     const ids = Array.from(new Set(list.map((o) => o.claimed_by).filter(Boolean))) as string[];
     if (ids.length) {
       const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
@@ -163,6 +181,17 @@ function AdminDashboard() {
   const shown = filter === "semua" ? orders : orders.filter((o) => o.status === filter);
   const baru = orders.filter((o) => o.status === "baru").length;
 
+  const detailItem = (item: OrderItem) => {
+    const baseName = item.name.replace(/\s*\([^)]*\)\s*$/, "").trim();
+    const product = products.find((p) => p.id === item.product_id) ?? products.find((p) => p.name === baseName);
+    const inferredVariant = item.name.match(/\(([^()]*)\)\s*$/)?.[1] ?? "";
+    return {
+      storeName: item.store_name || product?.store_name || "Toko belum tercatat",
+      imagePath: item.image_url || product?.image_url || null,
+      variantLabel: item.variant_label || inferredVariant,
+    };
+  };
+
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 pb-16">
@@ -248,15 +277,35 @@ function AdminDashboard() {
                 </div>
               )}
 
-              <ul className="mt-3 space-y-1 text-sm">
-                {o.items.map((i, idx) => (
-                  <li key={idx} className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {i.name} x{i.qty}
-                    </span>
-                    <span>{rupiah(i.price * i.qty)}</span>
-                  </li>
-                ))}
+              <ul className="mt-3 space-y-2">
+                {o.items.map((i, idx) => {
+                  const detail = detailItem(i);
+                  const imageUrl = detail.imagePath ? productImages[detail.imagePath] : undefined;
+                  return (
+                    <li key={`${i.product_id ?? i.name}-${idx}`} className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-2.5">
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
+                        {imageUrl ? (
+                          <img src={imageUrl} alt={i.name} className="h-full w-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className="grid h-full place-items-center text-muted-foreground"><ImageIcon className="h-5 w-5" /></div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold">{i.name.replace(/\s*\([^)]*\)\s*$/, "")}</p>
+                        <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                          <Store className="h-3 w-3 shrink-0" /> {detail.storeName}
+                        </p>
+                        {detail.variantLabel && (
+                          <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-primary">
+                            <Tags className="h-3 w-3" /> Varian: {detail.variantLabel}
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-muted-foreground">{i.qty} × {rupiah(i.price)}</p>
+                      </div>
+                      <span className="shrink-0 text-sm font-bold">{rupiah(i.price * i.qty)}</span>
+                    </li>
+                  );
+                })}
               </ul>
               {o.note && <p className="mt-2 rounded-lg bg-muted p-2 text-xs">Catatan: {o.note}</p>}
 

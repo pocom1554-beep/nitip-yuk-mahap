@@ -39,8 +39,18 @@ type KatalogItem = {
   price: number;
   image_url: string | null;
   is_available: boolean;
+  price_options: unknown;
 };
 
+type OpsiHarga = { label: string; price: number };
+
+function parseOpsiHarga(raw: unknown): OpsiHarga[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => item as { label?: unknown; price?: unknown })
+    .filter((item) => typeof item.label === "string" && item.label.trim() !== "")
+    .map((item) => ({ label: String(item.label), price: Number(item.price) || 0 }));
+}
 
 function Checkout() {
   const { items, setQty, remove, total, clear, add } = useCart();
@@ -78,8 +88,16 @@ function Checkout() {
     )
     .slice(0, 8);
 
-  const tambahDariKatalog = (p: KatalogItem) => {
-    add({ id: p.id, name: p.name, price: Number(p.price) || 0, image: p.image_url });
+  const tambahDariKatalog = (p: KatalogItem, opsi?: OpsiHarga) => {
+    add({
+      id: opsi ? `${p.id}::${opsi.label}` : p.id,
+      productId: p.id,
+      name: opsi ? `${p.name} (${opsi.label})` : p.name,
+      price: opsi?.price ?? (Number(p.price) || 0),
+      image: p.image_url,
+      storeName: p.store_name,
+      variantLabel: opsi?.label ?? "",
+    });
     toast.success(`${p.name} ditambahkan ke keranjang`);
   };
 
@@ -123,7 +141,7 @@ function Checkout() {
     const loadKatalog = async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, store_name, price, image_url, is_available")
+        .select("id, name, store_name, price, image_url, is_available, price_options")
         .order("name");
       const list = (data ?? []) as unknown as KatalogItem[];
       setKatalog(list);
@@ -206,7 +224,15 @@ function Checkout() {
         customer_whatsapp: wa.trim(),
         address: address.trim(),
         note: note.trim(),
-        items: items.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
+        items: items.map((i) => ({
+          product_id: i.productId ?? i.id.split("::")[0],
+          name: i.name,
+          price: i.price,
+          qty: i.qty,
+          image_url: i.image ?? null,
+          store_name: i.storeName ?? "",
+          variant_label: i.variantLabel ?? "",
+        })),
         distance_km: Number(distance) || 0,
         items_total: total,
         delivery_fee: ongkir,
@@ -275,8 +301,12 @@ function Checkout() {
         ) : (
           items.map((i) => (
             <div key={i.id} className="flex items-center gap-3 p-3">
+              {i.image && katalogImg[i.image] && (
+                <img src={katalogImg[i.image]} alt={i.name} className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{i.name}</p>
+                {i.storeName && <p className="truncate text-[11px] font-medium text-primary">{i.storeName}</p>}
                 <p className="text-xs text-muted-foreground">{rupiah(i.price)} / item</p>
               </div>
               <div className="flex items-center gap-1">
@@ -334,9 +364,26 @@ function Checkout() {
                     {p.store_name ? ` · ${p.store_name}` : ""}
                   </p>
                 </div>
-                <Button type="button" size="sm" variant="outline" onClick={() => tambahDariKatalog(p)}>
-                  <Plus className="h-4 w-4" /> Tambah
-                </Button>
+                {parseOpsiHarga(p.price_options).length > 0 ? (
+                  <div className="flex max-w-36 flex-wrap justify-end gap-1">
+                    {parseOpsiHarga(p.price_options).map((opsi) => (
+                      <Button
+                        key={opsi.label}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-[10px]"
+                        onClick={() => tambahDariKatalog(p, opsi)}
+                      >
+                        <Plus className="h-3 w-3" /> {opsi.label}
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <Button type="button" size="sm" variant="outline" onClick={() => tambahDariKatalog(p)}>
+                    <Plus className="h-4 w-4" /> Tambah
+                  </Button>
+                )}
               </li>
             ))}
           </ul>

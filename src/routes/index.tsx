@@ -189,9 +189,12 @@ function Katalog() {
   const tambah = (p: Product, opsi?: Opsi) => {
     add({
       id: opsi ? `${p.id}::${opsi.label}` : p.id,
+      productId: p.id,
       name: opsi ? `${p.name} (${opsi.label})` : p.name,
       price: opsi ? opsi.price : Number(p.price),
       image: p.image_url,
+      storeName: p.store_name,
+      variantLabel: opsi?.label ?? "",
     });
     toast.success(`${p.name} masuk keranjang`);
   };

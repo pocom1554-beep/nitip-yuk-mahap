@@ -211,7 +211,16 @@ function DetailToko() {
                       className="mt-1 w-full font-bold"
                       disabled={!p.is_available}
                       onClick={() => {
-                        add({ id: p.id, name: p.name, price: harga, image: p.image_url });
+                        const opsiTerpilih = opsi.find((o) => o.price === harga);
+                        add({
+                          id: opsiTerpilih ? `${p.id}::${opsiTerpilih.label}` : p.id,
+                          productId: p.id,
+                          name: opsiTerpilih ? `${p.name} (${opsiTerpilih.label})` : p.name,
+                          price: harga,
+                          image: p.image_url,
+                          storeName: p.store_name,
+                          variantLabel: opsiTerpilih?.label ?? "",
+                        });
                         toast.success(`${p.name} masuk keranjang`);
                       }}
                     >
