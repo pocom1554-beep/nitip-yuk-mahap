@@ -2,10 +2,13 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 export type CartItem = {
   id: string;
+  productId?: string;
   name: string;
   price: number;
   qty: number;
   image?: string | null;
+  storeName?: string;
+  variantLabel?: string;
 };
 
 type CartState = {
