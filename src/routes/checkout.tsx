@@ -2,7 +2,7 @@ import { notifyAdminsNewOrder } from "@/lib/push.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock, Search } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock, Search, Store, Check } from "lucide-react";
 import { jarakDariPusat, mapsEmbed, mapsLink } from "@/lib/maps";
 import { resolveImageUrls } from "@/lib/images";
 
@@ -15,6 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -40,6 +47,7 @@ type KatalogItem = {
   image_url: string | null;
   is_available: boolean;
   price_options: unknown;
+  detail: string | null;
 };
 
 type OpsiHarga = { label: string; price: number };
@@ -77,6 +85,9 @@ function Checkout() {
   const [katalog, setKatalog] = useState<KatalogItem[]>([]);
   const [cariItem, setCariItem] = useState("");
   const [katalogImg, setKatalogImg] = useState<Record<string, string>>({});
+  const [produkDipilih, setProdukDipilih] = useState<KatalogItem | null>(null);
+  const [opsiDipilih, setOpsiDipilih] = useState("");
+  const [jumlahTambahan, setJumlahTambahan] = useState(1);
 
 
   const katalogTampil = katalog
@@ -99,6 +110,24 @@ function Checkout() {
       variantLabel: opsi?.label ?? "",
     });
     toast.success(`${p.name} ditambahkan ke keranjang`);
+  };
+
+  const bukaDetailProduk = (p: KatalogItem) => {
+    const opsi = parseOpsiHarga(p.price_options);
+    setProdukDipilih(p);
+    setOpsiDipilih(opsi[0]?.label ?? "");
+    setJumlahTambahan(1);
+  };
+
+  const tambahkanProdukDipilih = () => {
+    if (!produkDipilih) return;
+    const pilihan = parseOpsiHarga(produkDipilih.price_options).find((opsi) => opsi.label === opsiDipilih);
+    tambahDariKatalog(produkDipilih, pilihan);
+    if (jumlahTambahan > 1) {
+      const id = pilihan ? `${produkDipilih.id}::${pilihan.label}` : produkDipilih.id;
+      setQty(id, jumlahTambahan);
+    }
+    setProdukDipilih(null);
   };
 
 
@@ -141,7 +170,7 @@ function Checkout() {
     const loadKatalog = async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, store_name, price, image_url, is_available, price_options")
+        .select("id, name, store_name, price, image_url, is_available, price_options, detail")
         .order("name");
       const list = (data ?? []) as unknown as KatalogItem[];
       setKatalog(list);
@@ -346,7 +375,10 @@ function Checkout() {
           <p className="text-xs text-muted-foreground">Barang tidak ditemukan di katalog.</p>
         ) : (
           <ul className="divide-y divide-border rounded-xl border border-border">
-            {katalogTampil.map((p) => (
+            {katalogTampil.map((p) => {
+              const opsiHarga = parseOpsiHarga(p.price_options);
+              const hargaTerendah = opsiHarga.length > 0 ? Math.min(...opsiHarga.map((opsi) => opsi.price)) : Number(p.price);
+              return (
               <li key={p.id} className="flex items-center gap-3 p-2.5">
                 <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-muted">
                   {p.image_url && katalogImg[p.image_url] ? (
@@ -360,38 +392,128 @@ function Checkout() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{p.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {rupiah(Number(p.price))}
+                    {opsiHarga.length > 0 ? `Mulai ${rupiah(hargaTerendah)}` : rupiah(Number(p.price))}
                     {p.store_name ? ` · ${p.store_name}` : ""}
                   </p>
+                  {opsiHarga.length > 0 && (
+                    <p className="mt-0.5 text-[10px] font-semibold text-primary">{opsiHarga.length} pilihan variasi</p>
+                  )}
                 </div>
-                {parseOpsiHarga(p.price_options).length > 0 ? (
-                  <div className="flex max-w-36 flex-wrap justify-end gap-1">
-                    {parseOpsiHarga(p.price_options).map((opsi) => (
-                      <Button
-                        key={opsi.label}
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="h-7 px-2 text-[10px]"
-                        onClick={() => tambahDariKatalog(p, opsi)}
-                      >
-                        <Plus className="h-3 w-3" /> {opsi.label}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <Button type="button" size="sm" variant="outline" onClick={() => tambahDariKatalog(p)}>
-                    <Plus className="h-4 w-4" /> Tambah
-                  </Button>
-                )}
+                <Button type="button" size="sm" variant="outline" className="h-8 shrink-0 px-2.5" onClick={() => bukaDetailProduk(p)}>
+                  <Plus className="h-3.5 w-3.5" /> {opsiHarga.length > 0 ? "Pilih" : "Detail"}
+                </Button>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
         <p className="text-xs text-muted-foreground">
           Barang tidak ada di katalog? Tulis saja di kolom catatan — admin akan konfirmasi lewat WhatsApp.
         </p>
       </section>
+
+      <Dialog open={Boolean(produkDipilih)} onOpenChange={(open) => !open && setProdukDipilih(null)}>
+        <DialogContent className="max-h-[90vh] w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl p-4 sm:max-w-md sm:p-5">
+          {produkDipilih && (() => {
+            const opsiHarga = parseOpsiHarga(produkDipilih.price_options);
+            const pilihan = opsiHarga.find((opsi) => opsi.label === opsiDipilih);
+            const hargaSatuan = pilihan?.price ?? Number(produkDipilih.price);
+            return (
+              <>
+                <div className="flex gap-3 pr-7">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
+                    {produkDipilih.image_url && katalogImg[produkDipilih.image_url] ? (
+                      <img
+                        src={katalogImg[produkDipilih.image_url]}
+                        alt={produkDipilih.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-muted-foreground">
+                        <PackagePlus className="h-6 w-6" />
+                      </div>
+                    )}
+                  </div>
+                  <DialogHeader className="min-w-0 flex-1 text-left">
+                    <DialogTitle className="text-base leading-snug">{produkDipilih.name}</DialogTitle>
+                    <DialogDescription className="flex items-center gap-1 text-xs">
+                      <Store className="h-3.5 w-3.5" /> {produkDipilih.store_name || "Mitra NitipYuk"}
+                    </DialogDescription>
+                    <p className="text-base font-black text-primary">{rupiah(hargaSatuan)}</p>
+                  </DialogHeader>
+                </div>
+
+                {produkDipilih.detail && (
+                  <p className="rounded-lg bg-muted/60 p-2.5 text-xs leading-relaxed text-muted-foreground">
+                    {produkDipilih.detail}
+                  </p>
+                )}
+
+                {opsiHarga.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Pilih variasi harga</Label>
+                      <span className="text-[10px] text-muted-foreground">Wajib dipilih</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {opsiHarga.map((opsi) => {
+                        const aktif = opsi.label === opsiDipilih;
+                        return (
+                          <Button
+                            key={opsi.label}
+                            type="button"
+                            variant={aktif ? "default" : "outline"}
+                            className="h-auto min-h-12 justify-between whitespace-normal px-3 py-2 text-left"
+                            onClick={() => setOpsiDipilih(opsi.label)}
+                          >
+                            <span className="min-w-0">
+                              <span className="block text-xs font-bold">{opsi.label}</span>
+                              <span className="block text-[11px] opacity-80">{rupiah(opsi.price)}</span>
+                            </span>
+                            {aktif && <Check className="h-4 w-4 shrink-0" />}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between rounded-xl border border-border p-2.5">
+                  <div>
+                    <p className="text-xs font-semibold">Jumlah pesanan</p>
+                    <p className="text-[10px] text-muted-foreground">Atur jumlah barang ini</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8"
+                      onClick={() => setJumlahTambahan((jumlah) => Math.max(1, jumlah - 1))}
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="w-7 text-center text-sm font-bold">{jumlahTambahan}</span>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8"
+                      onClick={() => setJumlahTambahan((jumlah) => Math.min(99, jumlah + 1))}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                <Button type="button" className="w-full" onClick={tambahkanProdukDipilih}>
+                  <PackagePlus className="h-4 w-4" /> Tambahkan · {rupiah(hargaSatuan * jumlahTambahan)}
+                </Button>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
 
       <section className="surface-card mt-4 space-y-3 p-4">
