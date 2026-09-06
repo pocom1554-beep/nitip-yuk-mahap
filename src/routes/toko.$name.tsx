@@ -219,7 +219,7 @@ function DetailToko() {
                           price: harga,
                           image: p.image_url,
                           storeName: p.store_name,
-                          variantLabel: opsiTerpilih?.label,
+                          variantLabel: opsiTerpilih?.label ?? "",
                         });
                         toast.success(`${p.name} masuk keranjang`);
                       }}

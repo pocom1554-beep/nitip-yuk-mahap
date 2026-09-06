@@ -93,10 +93,10 @@ function Checkout() {
       id: opsi ? `${p.id}::${opsi.label}` : p.id,
       productId: p.id,
       name: opsi ? `${p.name} (${opsi.label})` : p.name,
-      price: opsi?.price ?? Number(p.price) || 0,
+      price: opsi?.price ?? (Number(p.price) || 0),
       image: p.image_url,
       storeName: p.store_name,
-      variantLabel: opsi?.label,
+      variantLabel: opsi?.label ?? "",
     });
     toast.success(`${p.name} ditambahkan ke keranjang`);
   };

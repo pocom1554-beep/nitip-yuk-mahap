@@ -194,7 +194,7 @@ function Katalog() {
       price: opsi ? opsi.price : Number(p.price),
       image: p.image_url,
       storeName: p.store_name,
-      variantLabel: opsi?.label,
+      variantLabel: opsi?.label ?? "",
     });
     toast.success(`${p.name} masuk keranjang`);
   };
