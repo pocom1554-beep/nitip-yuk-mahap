@@ -52,7 +52,7 @@ export const hitungRutePengiriman = createServerFn({ method: "POST" })
         body: JSON.stringify({
           origin: { location: { latLng: { latitude: data.originLat, longitude: data.originLng } } },
           destination: { location: { latLng: { latitude: data.destLat, longitude: data.destLng } } },
-          travelMode: "TWO_WHEELER",
+          travelMode: "DRIVE",
           routingPreference: "TRAFFIC_AWARE",
         }),
       });
