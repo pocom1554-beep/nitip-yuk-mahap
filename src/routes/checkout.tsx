@@ -597,27 +597,71 @@ function Checkout() {
           />
           {coords && (
             <p className="text-xs text-muted-foreground">
-              Koordinat: {coords.lat}, {coords.lng} — perkiraan jarak {jarakDariPusat(coords.lat, coords.lng)} km.
+              Koordinat: {coords.lat}, {coords.lng}
+              {!asalPunyaKoordinat && ` — perkiraan jarak ${jarakDariPusat(coords.lat, coords.lng)} km.`}
             </p>
           )}
-          {(coords || address.trim()) && (
-            <iframe
-              title="Peta lokasi pengantaran"
-              src={mapsEmbed({ ...coords, address })}
-              className="h-52 w-full rounded-xl border border-border"
-              loading="lazy"
-            />
-          )}
+          {(coords || address.trim()) &&
+            (asalPunyaKoordinat && coords ? (
+              <iframe
+                title="Rute dari toko ke alamat pengantaran"
+                src={mapsRouteEmbed({ lat: tokoAsal?.lat, lng: tokoAsal?.lng, address: tokoAsal?.address }, coords)}
+                className="h-52 w-full rounded-xl border border-border"
+                loading="lazy"
+              />
+            ) : (
+              <iframe
+                title="Peta lokasi pengantaran"
+                src={mapsEmbed({ ...coords, address })}
+                className="h-52 w-full rounded-xl border border-border"
+                loading="lazy"
+              />
+            ))}
         </div>
+        {namaTokoPertama && (
+          <div className="space-y-2 rounded-xl border border-border bg-muted/40 p-3">
+            <p className="text-sm font-semibold">Titik jemput: {tokoAsal?.name ?? namaTokoPertama}</p>
+            <p className="text-xs text-muted-foreground">
+              {asalPunyaKoordinat
+                ? menghitungRute
+                  ? "Mencari rute tercepat ke alamatmu..."
+                  : coords
+                    ? `Rute ${sumberJarak === "google" ? "tercepat Google Maps" : "perkiraan"}: ${distance} km${
+                        durasiMenit > 0 ? ` · sekitar ${durasiMenit} menit` : ""
+                      }`
+                    : "Bagikan lokasimu agar jarak dihitung otomatis dari toko ini."
+                : "Koordinat toko belum diisi admin, jarak dihitung dari pusat Nanga Mahap."}
+            </p>
+            {asalPunyaKoordinat && (coords || address.trim()) && (
+              <Button asChild type="button" variant="outline" size="sm">
+                <a
+                  href={mapsRouteFromStore(
+                    { lat: tokoAsal?.lat, lng: tokoAsal?.lng, address: tokoAsal?.address },
+                    { ...coords, address },
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MapPin className="h-4 w-4" /> Lihat rute pengantaran
+                </a>
+              </Button>
+            )}
+          </div>
+        )}
         <div className="space-y-1.5">
-          <Label htmlFor="jr">Jarak dari pusat Nanga Mahap (km)</Label>
+          <Label htmlFor="jr">
+            {asalPunyaKoordinat ? `Jarak dari ${tokoAsal?.name} ke alamatmu (km)` : "Jarak dari pusat Nanga Mahap (km)"}
+          </Label>
           <Input
             id="jr"
             type="number"
             min={0}
             step="0.5"
             value={distance}
-            onChange={(e) => setDistance(e.target.value)}
+            onChange={(e) => {
+              setDistance(e.target.value);
+              setSumberJarak("manual");
+            }}
           />
           <p className="text-xs text-muted-foreground">
             Ongkos dasar {rupiah(settings.base_fee)} (sudah termasuk {settings.free_km} km) + {rupiah(settings.per_km_fee)}/km
