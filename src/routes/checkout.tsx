@@ -598,7 +598,6 @@ function Checkout() {
           {coords && (
             <p className="text-xs text-muted-foreground">
               Koordinat: {coords.lat}, {coords.lng}
-              {!asalPunyaKoordinat && ` — perkiraan jarak ${jarakDariPusat(coords.lat, coords.lng)} km.`}
             </p>
           )}
           {(coords || address.trim()) &&
@@ -630,7 +629,7 @@ function Checkout() {
                         durasiMenit > 0 ? ` · sekitar ${durasiMenit} menit` : ""
                       }`
                     : "Bagikan lokasimu agar jarak dihitung otomatis dari toko ini."
-                : "Koordinat toko belum diisi admin, jarak dihitung dari pusat Nanga Mahap."}
+                : "Titik lokasi toko ini belum diisi admin, jarak Google Maps belum bisa dihitung."}
             </p>
             {asalPunyaKoordinat && (coords || address.trim()) && (
               <Button asChild type="button" variant="outline" size="sm">
@@ -649,25 +648,17 @@ function Checkout() {
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="jr">
-            {asalPunyaKoordinat ? `Jarak dari ${tokoAsal?.name} ke alamatmu (km)` : "Jarak dari pusat Nanga Mahap (km)"}
-          </Label>
-          <Input
-            id="jr"
-            type="number"
-            min={0}
-            step="0.5"
-            value={distance}
-            onChange={(e) => {
-              setDistance(e.target.value);
-              setSumberJarak("manual");
-            }}
-          />
+          <Label htmlFor="jr">Jarak pengantaran (km)</Label>
+          <Input id="jr" type="text" value={distance ? `${distance} km` : "-"} readOnly disabled />
           <p className="text-xs text-muted-foreground">
+            {asalPunyaKoordinat
+              ? "Jarak dihitung otomatis lewat Google Maps dari toko ke alamatmu."
+              : "Bagikan lokasimu dan pastikan titik toko sudah diisi admin agar jarak terhitung otomatis."}{" "}
             Ongkos dasar {rupiah(settings.base_fee)} (sudah termasuk {settings.free_km} km) + {rupiah(settings.per_km_fee)}/km
             berikutnya.
           </p>
         </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="ct">Catatan / titipan barang lain</Label>
           <Textarea
