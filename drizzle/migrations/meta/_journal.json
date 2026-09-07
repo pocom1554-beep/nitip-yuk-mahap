@@ -8,6 +8,13 @@
       "when": 1788481780937,
       "tag": "0000_create_banners",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788742057577,
+      "tag": "0001_add_store_coordinates",
+      "breakpoints": true
     }
   ]
 }
