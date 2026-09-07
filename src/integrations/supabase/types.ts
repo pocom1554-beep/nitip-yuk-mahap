@@ -149,7 +149,11 @@ export type Database = {
           lng: number | null
           map_link: string
           note: string
+          origin_lat: number | null
+          origin_lng: number | null
+          origin_store: string
           promo_code: string
+          route_duration_min: number
           status: string
           total: number
           updated_at: string
@@ -172,7 +176,11 @@ export type Database = {
           lng?: number | null
           map_link?: string
           note?: string
+          origin_lat?: number | null
+          origin_lng?: number | null
+          origin_store?: string
           promo_code?: string
+          route_duration_min?: number
           status?: string
           total?: number
           updated_at?: string
@@ -195,7 +203,11 @@ export type Database = {
           lng?: number | null
           map_link?: string
           note?: string
+          origin_lat?: number | null
+          origin_lng?: number | null
+          origin_store?: string
           promo_code?: string
+          route_duration_min?: number
           status?: string
           total?: number
           updated_at?: string
@@ -422,7 +434,10 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          lat: number | null
+          lng: number | null
           logo_url: string
+          map_link: string
           name: string
           open_hours: string
           updated_at: string
@@ -434,7 +449,10 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          lat?: number | null
+          lng?: number | null
           logo_url?: string
+          map_link?: string
           name: string
           open_hours?: string
           updated_at?: string
@@ -446,7 +464,10 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          lat?: number | null
+          lng?: number | null
           logo_url?: string
+          map_link?: string
           name?: string
           open_hours?: string
           updated_at?: string

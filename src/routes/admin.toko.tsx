@@ -44,6 +44,8 @@ type StoreRow = {
   open_hours: string;
   whatsapp: string;
   logo_url: string;
+  lat: number | null;
+  lng: number | null;
 };
 
 const empty: StoreRow = {
@@ -54,6 +56,8 @@ const empty: StoreRow = {
   open_hours: "",
   whatsapp: "",
   logo_url: "",
+  lat: null,
+  lng: null,
 };
 
 function KelolaToko() {
@@ -108,6 +112,8 @@ function KelolaToko() {
       open_hours: form.open_hours.trim(),
       whatsapp: form.whatsapp.trim(),
       logo_url: form.logo_url || "",
+      lat: form.lat,
+      lng: form.lng,
     };
     const { error } = form.id
       ? await supabase.from("stores").update(payload).eq("id", form.id)
@@ -254,6 +260,44 @@ function KelolaToko() {
             <div className="space-y-1.5">
               <Label htmlFor="ta">Alamat toko</Label>
               <Input id="ta" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} maxLength={160} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Titik lokasi toko (Google Maps)</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  value={form.lat ?? ""}
+                  onChange={(e) => setForm({ ...form, lat: e.target.value === "" ? null : Number(e.target.value) })}
+                  placeholder="Latitude -0.5225"
+                  inputMode="decimal"
+                />
+                <Input
+                  value={form.lng ?? ""}
+                  onChange={(e) => setForm({ ...form, lng: e.target.value === "" ? null : Number(e.target.value) })}
+                  placeholder="Longitude 110.9075"
+                  inputMode="decimal"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  navigator.geolocation?.getCurrentPosition(
+                    (pos) =>
+                      setForm((f) => ({
+                        ...f,
+                        lat: Number(pos.coords.latitude.toFixed(6)),
+                        lng: Number(pos.coords.longitude.toFixed(6)),
+                      })),
+                    (err) => toast.error("Gagal mengambil lokasi", { description: err.message }),
+                  )
+                }
+              >
+                <Store className="h-4 w-4" /> Pakai lokasi saya sekarang
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Titik ini dipakai sebagai awal perhitungan ongkos kirim dan rute pengantaran.
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="to">Jam buka</Label>
