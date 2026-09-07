@@ -3,7 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock, Search, Store, Check } from "lucide-react";
-import { jarakDariPusat, mapsEmbed, mapsLink } from "@/lib/maps";
+import { jarakDariPusat, mapsEmbed, mapsLink, mapsRouteEmbed, mapsRouteFromStore } from "@/lib/maps";
+import { hitungRutePengiriman } from "@/lib/route.functions";
 import { resolveImageUrls } from "@/lib/images";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +53,8 @@ type KatalogItem = {
 
 type OpsiHarga = { label: string; price: number };
 
+type TokoAsal = { name: string; lat: number | null; lng: number | null; address: string };
+
 function parseOpsiHarga(raw: unknown): OpsiHarga[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -88,6 +91,10 @@ function Checkout() {
   const [produkDipilih, setProdukDipilih] = useState<KatalogItem | null>(null);
   const [opsiDipilih, setOpsiDipilih] = useState("");
   const [jumlahTambahan, setJumlahTambahan] = useState(1);
+  const [stores, setStores] = useState<TokoAsal[]>([]);
+  const [durasiMenit, setDurasiMenit] = useState(0);
+  const [sumberJarak, setSumberJarak] = useState<"manual" | "google" | "perkiraan">("manual");
+  const [menghitungRute, setMenghitungRute] = useState(false);
 
 
   const katalogTampil = katalog
@@ -180,11 +187,50 @@ function Checkout() {
   }, []);
 
   useEffect(() => {
+    void supabase
+      .from("stores")
+      .select("name, lat, lng, address")
+      .then(({ data }) => setStores((data ?? []) as unknown as TokoAsal[]));
+  }, []);
+
+  useEffect(() => {
     if (profile) {
       setAddress((a) => a || profile.address);
       setWa((w) => w || profile.whatsapp);
     }
   }, [profile]);
+
+  const namaTokoPertama = items[0]?.storeName?.trim() ?? "";
+  const tokoAsal =
+    stores.find((s) => s.name.trim().toLowerCase() === namaTokoPertama.toLowerCase()) ?? null;
+  const asalPunyaKoordinat = typeof tokoAsal?.lat === "number" && typeof tokoAsal?.lng === "number";
+
+  useEffect(() => {
+    if (!coords || !tokoAsal || !asalPunyaKoordinat) return;
+    let batal = false;
+    setMenghitungRute(true);
+    void hitungRutePengiriman({
+      data: {
+        originLat: tokoAsal.lat as number,
+        originLng: tokoAsal.lng as number,
+        destLat: coords.lat,
+        destLng: coords.lng,
+      },
+    })
+      .then((res) => {
+        if (batal) return;
+        setDistance(String(res.distanceKm));
+        setDurasiMenit(res.durationMin);
+        setSumberJarak(res.source);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!batal) setMenghitungRute(false);
+      });
+    return () => {
+      batal = true;
+    };
+  }, [coords?.lat, coords?.lng, tokoAsal?.name, tokoAsal?.lat, tokoAsal?.lng, asalPunyaKoordinat]);
 
   const ongkir = hitungOngkir(Number(distance), settings);
   const diskon = promo
@@ -272,6 +318,10 @@ function Checkout() {
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
         map_link: mapLink.trim(),
+        origin_store: tokoAsal?.name ?? namaTokoPertama,
+        origin_lat: tokoAsal?.lat ?? null,
+        origin_lng: tokoAsal?.lng ?? null,
+        route_duration_min: durasiMenit,
       })
       .select()
       .single();
