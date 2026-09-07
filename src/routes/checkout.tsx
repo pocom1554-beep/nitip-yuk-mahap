@@ -649,25 +649,17 @@ function Checkout() {
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="jr">
-            {asalPunyaKoordinat ? `Jarak dari ${tokoAsal?.name} ke alamatmu (km)` : "Jarak dari pusat Nanga Mahap (km)"}
-          </Label>
-          <Input
-            id="jr"
-            type="number"
-            min={0}
-            step="0.5"
-            value={distance}
-            onChange={(e) => {
-              setDistance(e.target.value);
-              setSumberJarak("manual");
-            }}
-          />
+          <Label htmlFor="jr">Jarak pengantaran (km)</Label>
+          <Input id="jr" type="text" value={distance ? `${distance} km` : "-"} readOnly disabled />
           <p className="text-xs text-muted-foreground">
+            {asalPunyaKoordinat
+              ? "Jarak dihitung otomatis lewat Google Maps dari toko ke alamatmu."
+              : "Bagikan lokasimu dan pastikan titik toko sudah diisi admin agar jarak terhitung otomatis."}{" "}
             Ongkos dasar {rupiah(settings.base_fee)} (sudah termasuk {settings.free_km} km) + {rupiah(settings.per_km_fee)}/km
             berikutnya.
           </p>
         </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="ct">Catatan / titipan barang lain</Label>
           <Textarea
