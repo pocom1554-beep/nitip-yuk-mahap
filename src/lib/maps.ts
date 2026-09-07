@@ -46,3 +46,17 @@ export function jarakDariPusat(lat: number, lng: number): number {
       Math.sin(dLng / 2) ** 2;
   return Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10;
 }
+
+/** Tautan rute Google Maps dari titik toko/mitra ke alamat pemesan. */
+export function mapsRouteFromStore(origin: MapTarget, dest: MapTarget): string {
+  const o = hasCoords(origin) ? `${origin.lat},${origin.lng}` : (origin.address || "Nanga Mahap").trim();
+  const d = hasCoords(dest) ? `${dest.lat},${dest.lng}` : (dest.address || "Nanga Mahap").trim();
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&travelmode=driving`;
+}
+
+/** Peta rute untuk <iframe> (tanpa API key). */
+export function mapsRouteEmbed(origin: MapTarget, dest: MapTarget): string {
+  const o = hasCoords(origin) ? `${origin.lat},${origin.lng}` : (origin.address || "Nanga Mahap").trim();
+  const d = hasCoords(dest) ? `${dest.lat},${dest.lng}` : (dest.address || "Nanga Mahap").trim();
+  return `https://maps.google.com/maps?saddr=${encodeURIComponent(o)}&daddr=${encodeURIComponent(d)}&z=14&output=embed`;
+}
