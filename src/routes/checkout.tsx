@@ -630,7 +630,7 @@ function Checkout() {
                         durasiMenit > 0 ? ` · sekitar ${durasiMenit} menit` : ""
                       }`
                     : "Bagikan lokasimu agar jarak dihitung otomatis dari toko ini."
-                : "Koordinat toko belum diisi admin, jarak dihitung dari pusat Nanga Mahap."}
+                : "Titik lokasi toko ini belum diisi admin, jarak Google Maps belum bisa dihitung."}
             </p>
             {asalPunyaKoordinat && (coords || address.trim()) && (
               <Button asChild type="button" variant="outline" size="sm">
