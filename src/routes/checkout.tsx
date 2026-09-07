@@ -598,7 +598,6 @@ function Checkout() {
           {coords && (
             <p className="text-xs text-muted-foreground">
               Koordinat: {coords.lat}, {coords.lng}
-              {!asalPunyaKoordinat && ` — perkiraan jarak ${jarakDariPusat(coords.lat, coords.lng)} km.`}
             </p>
           )}
           {(coords || address.trim()) &&
