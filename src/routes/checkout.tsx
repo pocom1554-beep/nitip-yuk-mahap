@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock, Search, Store, Check } from "lucide-react";
-import { jarakDariPusat, mapsEmbed, mapsLink, mapsRouteEmbed, mapsRouteFromStore } from "@/lib/maps";
+import { mapsEmbed, mapsLink, mapsRouteEmbed, mapsRouteFromStore } from "@/lib/maps";
 import { hitungRutePengiriman } from "@/lib/route.functions";
 import { resolveImageUrls } from "@/lib/images";
 
@@ -150,7 +150,7 @@ function Checkout() {
         const lng = Number(pos.coords.longitude.toFixed(6));
         setCoords({ lat, lng });
         setMapLink(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
-        setDistance(String(jarakDariPusat(lat, lng)));
+        
         setLocating(false);
         toast.success("Lokasi peta tersimpan", { description: "Admin bisa langsung buka rute Google Maps." });
       },
