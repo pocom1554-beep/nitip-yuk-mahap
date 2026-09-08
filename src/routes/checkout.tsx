@@ -150,7 +150,7 @@ function Checkout() {
         const lng = Number(pos.coords.longitude.toFixed(6));
         setCoords({ lat, lng });
         setMapLink(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
-        setDistance(String(jarakDariPusat(lat, lng)));
+        
         setLocating(false);
         toast.success("Lokasi peta tersimpan", { description: "Admin bisa langsung buka rute Google Maps." });
       },
