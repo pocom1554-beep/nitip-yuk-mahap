@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Minus, Plus, Trash2, MessageCircle, MapPin, LocateFixed, PackagePlus, Clock, Search, Store, Check } from "lucide-react";
-import { jarakDariPusat, mapsEmbed, mapsLink, mapsRouteEmbed, mapsRouteFromStore } from "@/lib/maps";
+import { mapsEmbed, mapsLink, mapsRouteEmbed, mapsRouteFromStore } from "@/lib/maps";
 import { hitungRutePengiriman } from "@/lib/route.functions";
 import { resolveImageUrls } from "@/lib/images";
 
