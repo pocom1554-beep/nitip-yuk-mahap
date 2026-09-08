@@ -127,6 +127,7 @@ function Katalog() {
           .from("promos")
           .select("id, code, title, description, kind, value, min_spend, expires_at")
           .eq("is_active", true)
+          .eq("audience", "semua")
           .order("created_at", { ascending: false }),
         supabase.from("stores").select("name, description, open_hours, logo_url"),
       ]);
