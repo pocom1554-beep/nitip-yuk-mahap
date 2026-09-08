@@ -15,6 +15,13 @@
       "when": 1788742057577,
       "tag": "0001_add_store_coordinates",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788869522384,
+      "tag": "0002_promo_audience_targets",
+      "breakpoints": true
     }
   ]
 }
