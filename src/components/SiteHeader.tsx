@@ -108,6 +108,12 @@ export function SiteHeader() {
                         <Trophy className="mr-2 h-4 w-4" /> Peringkat kurir
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">
+                        <ShieldCheck className="mr-2 h-4 w-4" /> Dasbor pesanan
+                      </Link>
+                    </DropdownMenuItem>
                   </>
                 ) : (
 
