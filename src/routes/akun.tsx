@@ -37,7 +37,7 @@ type OrderLite = {
 };
 
 function AkunPage() {
-  const { user, profile, isAdmin, isOwner, loading, refresh, signOut } = useAuth();
+  const { user, profile, isAdmin, isKurir, isOwner, loading, refresh, signOut } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState("");
