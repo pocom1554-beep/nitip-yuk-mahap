@@ -295,8 +295,38 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_targets: {
+        Row: {
+          created_at: string
+          id: string
+          promo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          promo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          promo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_targets_promo_id_fkey"
+            columns: ["promo_id"]
+            isOneToOne: false
+            referencedRelation: "promos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promos: {
         Row: {
+          audience: string
           code: string
           created_at: string
           description: string
@@ -314,6 +344,7 @@ export type Database = {
           value: number
         }
         Insert: {
+          audience?: string
           code: string
           created_at?: string
           description?: string
@@ -331,6 +362,7 @@ export type Database = {
           value?: number
         }
         Update: {
+          audience?: string
           code?: string
           created_at?: string
           description?: string

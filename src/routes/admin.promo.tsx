@@ -51,8 +51,11 @@ type Promo = {
   quota: number;
   used_count: number;
   is_active: boolean;
+  audience: string;
   expires_at: string | null;
 };
+
+type Pelanggan = { id: string; full_name: string; whatsapp: string };
 
 const empty: Promo = {
   id: "",
@@ -66,6 +69,7 @@ const empty: Promo = {
   quota: 0,
   used_count: 0,
   is_active: true,
+  audience: "semua",
   expires_at: null,
 };
 
@@ -75,14 +79,31 @@ function KelolaPromo() {
   const [form, setForm] = useState<Promo>({ ...empty });
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [pelanggan, setPelanggan] = useState<Pelanggan[]>([]);
+  const [targets, setTargets] = useState<Record<string, string[]>>({});
+  const [pilihUser, setPilihUser] = useState<string[]>([]);
+  const [cariUser, setCariUser] = useState("");
 
   const load = async () => {
-    const { data } = await supabase.from("promos").select("*").order("created_at", { ascending: false });
+    const [{ data }, { data: tgt }] = await Promise.all([
+      supabase.from("promos").select("*").order("created_at", { ascending: false }),
+      supabase.from("promo_targets").select("promo_id, user_id"),
+    ]);
     setRows((data ?? []) as unknown as Promo[]);
+    const map: Record<string, string[]> = {};
+    for (const t of (tgt ?? []) as { promo_id: string; user_id: string }[]) {
+      (map[t.promo_id] ??= []).push(t.user_id);
+    }
+    setTargets(map);
   };
 
   useEffect(() => {
     void load();
+    void supabase
+      .from("profiles")
+      .select("id, full_name, whatsapp")
+      .order("full_name")
+      .then(({ data }) => setPelanggan((data ?? []) as Pelanggan[]));
   }, []);
 
   if (!isOwner) {
