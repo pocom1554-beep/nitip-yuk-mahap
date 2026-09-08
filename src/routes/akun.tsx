@@ -244,10 +244,10 @@ function AkunPage() {
               <ShoppingBag className="h-4 w-4" /> Katalog
             </Link>
           </Button>
-          {isAdmin && (
+          {(isAdmin || isKurir) && (
             <Button asChild variant="outline" size="sm">
               <Link to="/admin">
-                <ShieldCheck className="h-4 w-4" /> Dasbor admin
+                <ShieldCheck className="h-4 w-4" /> {isAdmin ? "Dasbor admin" : "Dasbor pesanan"}
               </Link>
             </Button>
           )}
