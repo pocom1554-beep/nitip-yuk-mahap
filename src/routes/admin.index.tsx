@@ -31,7 +31,7 @@ export const Route = createFileRoute("/admin/")({
     ],
   }),
   component: () => (
-    <AdminGate>
+    <AdminGate allowKurir>
       <AdminDashboard />
     </AdminGate>
   ),
