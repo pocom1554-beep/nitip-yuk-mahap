@@ -3,8 +3,16 @@ import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
-export function AdminGate({ children }: { children: ReactNode }) {
-  const { user, isAdmin, loading } = useAuth();
+export function AdminGate({
+  children,
+  allowKurir = false,
+}: {
+  children: ReactNode;
+  /** Izinkan akun kurir membuka halaman ini (mis. dasbor pesanan). */
+  allowKurir?: boolean;
+}) {
+  const { user, isAdmin, isKurir, loading } = useAuth();
+  const berhak = isAdmin || (allowKurir && isKurir);
 
   if (loading) {
     return <main className="p-10 text-center text-sm text-muted-foreground">Memuat...</main>;
