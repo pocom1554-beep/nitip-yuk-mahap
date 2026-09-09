@@ -340,6 +340,7 @@ function Checkout() {
           total: grandTotal,
         },
       }).catch(() => undefined);
+      void notifyKurirGroupNewOrder({ data: { orderId: data.id as string } }).catch(() => undefined);
     }
     void navigate({ to: "/pesanan" });
   };
