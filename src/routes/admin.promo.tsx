@@ -222,7 +222,15 @@ function KelolaPromo() {
                 <span className="font-display text-lg font-black tracking-wide">{p.code}</span>
                 {p.is_active ? <Badge>Aktif</Badge> : <Badge variant="secondary">Nonaktif</Badge>}
               </div>
+              <div className="mt-1.5">
+                {p.audience === "khusus" ? (
+                  <Badge variant="outline">Khusus {(targets[p.id] ?? []).length} pelanggan</Badge>
+                ) : (
+                  <Badge variant="outline">Untuk semua konsumen</Badge>
+                )}
+              </div>
               <p className="mt-1 text-sm font-semibold">{p.title || "Tanpa judul"}</p>
+
               {p.description && <p className="text-xs text-muted-foreground">{p.description}</p>}
               <p className="mt-2 text-sm font-bold text-primary">
                 {p.kind === "persen" ? `Potongan ${p.value}%` : `Potongan ${rupiah(p.value)}`}
