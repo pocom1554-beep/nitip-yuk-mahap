@@ -199,11 +199,14 @@ function KelolaPromo() {
         <Button
           onClick={() => {
             setForm({ ...empty });
+            setPilihUser([]);
+            setCariUser("");
             setOpen(true);
           }}
         >
           <Plus className="h-4 w-4" /> Buat promo
         </Button>
+
       </div>
 
       {rows.length === 0 ? (
