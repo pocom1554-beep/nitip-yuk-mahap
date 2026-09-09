@@ -125,6 +125,10 @@ function KelolaPromo() {
       toast.error("Kode voucher wajib diisi");
       return;
     }
+    if (form.audience === "khusus" && pilihUser.length === 0) {
+      toast.error("Pilih minimal satu pelanggan penerima voucher");
+      return;
+    }
     setBusy(true);
     const payload = {
       code: form.code.trim().toUpperCase(),
@@ -136,11 +140,28 @@ function KelolaPromo() {
       max_discount: Number(form.max_discount) || 0,
       quota: Number(form.quota) || 0,
       is_active: form.is_active,
+      audience: form.audience,
       expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
     };
-    const { error } = form.id
-      ? await supabase.from("promos").update(payload).eq("id", form.id)
-      : await supabase.from("promos").insert(payload);
+    let promoId = form.id;
+    let error = null as { message: string } | null;
+    if (form.id) {
+      const res = await supabase.from("promos").update(payload).eq("id", form.id);
+      error = res.error;
+    } else {
+      const res = await supabase.from("promos").insert(payload).select("id").single();
+      error = res.error;
+      promoId = res.data?.id ?? "";
+    }
+    if (!error && promoId) {
+      await supabase.from("promo_targets").delete().eq("promo_id", promoId);
+      if (form.audience === "khusus" && pilihUser.length > 0) {
+        const res = await supabase
+          .from("promo_targets")
+          .insert(pilihUser.map((uid) => ({ promo_id: promoId, user_id: uid })));
+        error = res.error;
+      }
+    }
     setBusy(false);
     if (error) {
       toast.error("Gagal menyimpan promo", { description: error.message });
@@ -149,8 +170,11 @@ function KelolaPromo() {
     toast.success(form.id ? "Promo diperbarui" : "Promo dibuat");
     setOpen(false);
     setForm({ ...empty });
+    setPilihUser([]);
+    setCariUser("");
     await load();
   };
+
 
   const hapus = async (p: Promo) => {
     if (!confirm(`Hapus promo ${p.code}?`)) return;
@@ -175,11 +199,14 @@ function KelolaPromo() {
         <Button
           onClick={() => {
             setForm({ ...empty });
+            setPilihUser([]);
+            setCariUser("");
             setOpen(true);
           }}
         >
           <Plus className="h-4 w-4" /> Buat promo
         </Button>
+
       </div>
 
       {rows.length === 0 ? (
@@ -195,7 +222,15 @@ function KelolaPromo() {
                 <span className="font-display text-lg font-black tracking-wide">{p.code}</span>
                 {p.is_active ? <Badge>Aktif</Badge> : <Badge variant="secondary">Nonaktif</Badge>}
               </div>
+              <div className="mt-1.5">
+                {p.audience === "khusus" ? (
+                  <Badge variant="outline">Khusus {(targets[p.id] ?? []).length} pelanggan</Badge>
+                ) : (
+                  <Badge variant="outline">Untuk semua konsumen</Badge>
+                )}
+              </div>
               <p className="mt-1 text-sm font-semibold">{p.title || "Tanpa judul"}</p>
+
               {p.description && <p className="text-xs text-muted-foreground">{p.description}</p>}
               <p className="mt-2 text-sm font-bold text-primary">
                 {p.kind === "persen" ? `Potongan ${p.value}%` : `Potongan ${rupiah(p.value)}`}
